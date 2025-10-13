@@ -445,6 +445,8 @@ app.post('/generate-portfolio', async (req, res) => {
   const templateMap = {
     classic: 'ClassicTheme',
     dark: 'DarkTheme',
+    minimal: 'MinimalistTheme',
+    creative: 'CreativeTheme',
   };
 
   // Sanitize template name to prevent directory traversal
@@ -477,6 +479,10 @@ app.post('/generate-portfolio', async (req, res) => {
         skillsHtml = formData.skills.split(',').map(skill => `<span class="px-4 py-2 bg-indigo-100 text-indigo-800 rounded-full">${skill.trim()}</span>`).join('\n');
       } else if (template === 'dark') {
         skillsHtml = formData.skills.split(',').map(skill => `<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">${skill.trim()}</span>`).join('\n');
+      } else if (template === 'minimal') {
+        skillsHtml = formData.skills.split(',').map(skill => `<span class="skill">${skill.trim()}</span>`).join('\n');
+      } else if (template === 'creative') {
+        skillsHtml = formData.skills.split(',').map(skill => `<span class="px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-sm font-medium">${skill.trim()}</span>`).join('\n');
       }
       generatedHtml = generatedHtml.replace('<!-- SKILLS -->', skillsHtml);
     }
@@ -520,6 +526,32 @@ app.post('/generate-portfolio', async (req, res) => {
               <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </a>
           </div>
+        </div>
+        `).join('\n');
+      } else if (template === 'minimal') {
+        projectsHtml = formData.projects.map(project => `
+        <div class="project fade-in">
+          <div class="project-content">
+            <h3>${project.title}</h3>
+            <p>${project.description}</p>
+            <div class="tech-stack">
+              ${(project.technologies || '').split(',').map(tech => `<span>${tech.trim()}</span>`).join('')}
+            </div>
+            <a href="${project.link || '#'}">View Project →</a>
+          </div>
+        </div>
+        `).join('\n');
+      } else if (template === 'creative') {
+        projectsHtml = formData.projects.map(project => `
+        <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+          <h3 class="text-xl font-bold text-gray-800 mb-2">${project.title}</h3>
+          <p class="text-gray-600 mb-4 text-sm">${project.description}</p>
+          <div class="flex flex-wrap gap-2 mb-4">
+            ${(project.technologies || '').split(',').map(tech => `<span class="px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-xs font-medium">${tech.trim()}</span>`).join('')}
+          </div>
+          <a href="${project.link || '#'}" class="text-pink-600 font-semibold hover:underline text-sm">
+            View Project &rarr;
+          </a>
         </div>
         `).join('\n');
       }
@@ -572,6 +604,8 @@ app.post('/api/download-html', async (req, res) => {
   const templateMap = {
     classic: 'ClassicTheme',
     dark: 'DarkTheme',
+    minimal: 'MinimalistTheme',
+    creative: 'CreativeTheme',
   };
 
   const sanitizedTemplate = path.normalize(template).replace(/^(\.\.[/\\])+/, '');
@@ -599,6 +633,10 @@ app.post('/api/download-html', async (req, res) => {
         skillsHtml = formData.skills.split(',').map(skill => `<span class="px-4 py-2 bg-indigo-100 text-indigo-800 rounded-full">${skill.trim()}</span>`).join('\n');
       } else if (template === 'dark') {
         skillsHtml = formData.skills.split(',').map(skill => `<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">${skill.trim()}</span>`).join('\n');
+      } else if (template === 'minimal') {
+        skillsHtml = formData.skills.split(',').map(skill => `<span class="skill">${skill.trim()}</span>`).join('\n');
+      } else if (template === 'creative') {
+        skillsHtml = formData.skills.split(',').map(skill => `<span class="px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-sm font-medium">${skill.trim()}</span>`).join('\n');
       }
       generatedHtml = generatedHtml.replace('<!-- SKILLS -->', skillsHtml);
     }
@@ -610,6 +648,32 @@ app.post('/api/download-html', async (req, res) => {
       if (template === 'classic') {
         projectsHtml = formData.projects.map(project => `
           <div class="project-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300"><div class="p-6"><h3 class="text-2xl font-semibold text-gray-800 mb-2">${project.title}</h3><p class="text-gray-600 mb-4">${project.description}</p><div class="mb-4"><h4 class="font-medium text-gray-800 mb-2">Technologies:</h4><div class="flex flex-wrap gap-2">${(project.technologies || '').split(',').map(tech => `<span class="px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded">${tech.trim()}</span>`).join('')}</div></div><a href="${project.link || '#'}" class="text-indigo-600 font-medium hover:underline inline-flex items-center">View Project <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></a></div></div>`).join('\n');
+      } else if (template === 'minimal') {
+        projectsHtml = formData.projects.map(project => `
+        <div class="project fade-in">
+          <div class="project-content">
+            <h3>${project.title}</h3>
+            <p>${project.description}</p>
+            <div class="tech-stack">
+              ${(project.technologies || '').split(',').map(tech => `<span>${tech.trim()}</span>`).join('')}
+            </div>
+            <a href="${project.link || '#'}">View Project →</a>
+          </div>
+        </div>
+        `).join('\n');
+      } else if (template === 'creative') {
+        projectsHtml = formData.projects.map(project => `
+        <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+          <h3 class="text-xl font-bold text-gray-800 mb-2">${project.title}</h3>
+          <p class="text-gray-600 mb-4 text-sm">${project.description}</p>
+          <div class="flex flex-wrap gap-2 mb-4">
+            ${(project.technologies || '').split(',').map(tech => `<span class="px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-xs font-medium">${tech.trim()}</span>`).join('')}
+          </div>
+          <a href="${project.link || '#'}" class="text-pink-600 font-semibold hover:underline text-sm">
+            View Project &rarr;
+          </a>
+        </div>
+        `).join('\n');
       } else { // dark
         projectsHtml = formData.projects.map(project => `
         <div class="project-card bg-gray-800 rounded-lg overflow-hidden border border-gray-700 shadow-lg transition duration-300 hover:border-green-600 hover:border-opacity-50"><div class="p-6"><h3 class="text-2xl font-semibold text-gray-100 mb-2">${project.title}</h3><p class="text-gray-300 mb-4">${project.description}</p><div class="mb-4"><h4 class="font-medium text-green-400 mb-2">Technologies</h4><div class="flex flex-wrap gap-2">${(project.technologies || '').split(',').map(tech => `<span class="px-3 py-1 bg-gray-700 text-green-400 text-xs rounded-lg">${tech.trim()}</span>`).join('')}</div></div><a href="${project.link || '#'}" class="text-green-400 hover:text-green-300 font-medium hover:underline inline-flex items-center">View project <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></a></div></div>`).join('\n');
