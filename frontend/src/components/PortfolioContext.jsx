@@ -238,6 +238,7 @@ export const PortfolioProvider = ({ children }) => {
       resume,
       hasResume,
       uploadResume,
+      setLoading, // Expose setLoading to be used by other components
       hasPortfolio,
       loading,
       createPortfolio,

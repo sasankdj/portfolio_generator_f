@@ -2,10 +2,10 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="mt-12 px-4 md:px-8 py-8 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white">
+    <footer className="mt-12 px-4 md:px-8 py-8 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white" style={{ fontFamily: "'Itim', cursive" }}>
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4" >
             <div className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
               Portfolio Platform
             </div>

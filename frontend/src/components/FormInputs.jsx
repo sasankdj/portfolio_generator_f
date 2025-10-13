@@ -4,7 +4,7 @@ import { usePortfolio } from "./PortfolioContext";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-const FormInputs = ({ formData, setFormData, image, setImage}) => {
+const FormInputs = ({ formData, setFormData, image, setImage }) => {
   const [isParsingResume, setIsParsingResume] = useState(false);
   const { setLoading: setGlobalLoading } = usePortfolio();
   const [enhancing, setEnhancing] = useState(false);
