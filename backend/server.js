@@ -441,7 +441,7 @@ const parseResumeText = (text) => {
 
 
 app.post('/generate-portfolio', async (req, res) => {
-  const { formData, template } = req.body;
+  const { formData, template, image } = req.body;
 
   if (!formData || !template) {
     return res.status(400).json({ error: 'Missing formData or template' });
@@ -471,6 +471,7 @@ app.post('/generate-portfolio', async (req, res) => {
     generatedHtml = generatedHtml.replace(/{{headline}}/g, formData.headline || '');
     generatedHtml = generatedHtml.replace(/{{email}}/g, formData.email || '');
     generatedHtml = generatedHtml.replace(/{{careerObjective}}/g, formData.careerObjective || '');
+    generatedHtml = generatedHtml.replace(/{{avatarUrl}}/g, image || 'https://imgcdn.stablediffusionweb.com/2024/11/1/b51f49a9-82a1-4659-905d-c8cd8643bade.jpg');
 
     // Skills
     if (formData.skills) {

@@ -37,6 +37,7 @@ function Form() {
         },
         body: JSON.stringify({
           formData,
+          image,
           template: selectedTemplateId,
         }),
       });
@@ -66,6 +67,7 @@ function Form() {
         },
         body: JSON.stringify({
           formData,
+          image,
           template: selectedTemplateId,
         }),
       });
@@ -96,6 +98,7 @@ function Form() {
       },
       body: JSON.stringify({
         formData,
+        image,
         template: selectedTemplateId,
       }),
     });
