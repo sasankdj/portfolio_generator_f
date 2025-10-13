@@ -45,8 +45,11 @@ function Form() {
         throw new Error('Failed to generate portfolio');
       }
 
-      const { url } = await response.json();
-      window.open(url, '_blank');
+      const data = await response.json();
+      const blob = new Blob([data.html], { type: 'text/html' });
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, '_blank');
+      URL.revokeObjectURL(blobUrl); // Clean up the blob URL after opening
     } catch (error) {
       console.error('Error generating portfolio:', error);
       toast.error('Error generating portfolio. Please try again.');
@@ -71,9 +74,12 @@ function Form() {
         throw new Error('Failed to generate portfolio');
       }
 
-      const data = await response.json();
+      const data = await response.json();      
+      const blob = new Blob([data.html], { type: 'text/html' });
+      const blobUrl = URL.createObjectURL(blob);
       toast.success("Portfolio created successfully!");
-      navigate('/success', { state: { portfolioUrl: data.url, template: selectedTemplateId } });
+      // We pass the blob URL to the success page for previewing.
+      navigate('/success', { state: { portfolioUrl: blobUrl, template: selectedTemplateId } });
     } catch (error) {
       console.error('Error creating portfolio:', error);
       toast.error('Error creating portfolio. Please try again.');
@@ -81,36 +87,45 @@ function Form() {
   };
 
   const downloadHtmlFile = async () => {
-     updateUserDetails(formData); // Update context before action
-     try {
-       const response = await fetch(`${API_BASE_URL}/api/download-html`, {
-         method: 'POST',
-         headers: {
-           'Content-Type': 'application/json',
-         },
-         body: JSON.stringify({
-           formData,
-           template: selectedTemplateId,
-         }),
-       });
- 
-       if (!response.ok) {
-         throw new Error('Failed to generate HTML for download');
-       }
- 
-       const blob = await response.blob();
-       const a = document.createElement('a');
-       a.href = URL.createObjectURL(blob);
-       a.download = 'portfolio.html';
-       document.body.appendChild(a);
-       a.click();
-       document.body.removeChild(a);
-       URL.revokeObjectURL(a.href);
-     } catch (error) {
-       console.error('Error downloading portfolio:', error);
-       toast.error('Error downloading portfolio. Please try again.');
-     }
-  };
+  updateUserDetails(formData); // Update context before action
+  try {
+    const response = await fetch(`${API_BASE_URL}/generate-portfolio`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        formData,
+        template: selectedTemplateId,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate portfolio');
+    }
+
+    const data = await response.json();
+
+    if (!data.html) {
+      throw new Error('No HTML returned from server');
+    }
+
+    // Convert returned HTML string to a Blob
+    const blob = new Blob([data.html], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'portfolio.html';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+
+    toast.success('Portfolio downloaded successfully!');
+  } catch (error) {
+    console.error('Error downloading portfolio:', error);
+    toast.error('Error downloading portfolio. Please try again.');
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">

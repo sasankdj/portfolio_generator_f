@@ -444,7 +444,7 @@ app.post('/generate-portfolio', async (req, res) => {
   const { formData, template } = req.body;
 
   if (!formData || !template) {
-    return res.status(400).send('Missing formData or template');
+    return res.status(400).json({ error: 'Missing formData or template' });
   }
 
   const templateMap = {
@@ -454,12 +454,11 @@ app.post('/generate-portfolio', async (req, res) => {
     creative: 'CreativeTheme',
   };
 
-  // Sanitize template name to prevent directory traversal
   const sanitizedTemplate = path.normalize(template).replace(/^(\.\.[/\\])+/, '');
   const templateFileName = templateMap[sanitizedTemplate];
 
   if (!templateFileName) {
-    return res.status(400).send('Invalid template');
+    return res.status(400).json({ error: 'Invalid template' });
   }
 
   const templatePath = path.join(__dirname, '..', 'frontend', 'src', 'templates', `${templateFileName}.html`);
@@ -467,11 +466,7 @@ app.post('/generate-portfolio', async (req, res) => {
   try {
     let generatedHtml = await fs.readFile(templatePath, 'utf8');
 
-    // --- Start of template replacement logic ---
-    // This logic remains largely the same, so it's condensed for clarity.
-    // I'll show the important parts that use formData.
-
-    // Simple replacements
+    // --- Replace placeholders ---
     generatedHtml = generatedHtml.replace(/{{fullName}}/g, formData.fullName || '');
     generatedHtml = generatedHtml.replace(/{{headline}}/g, formData.headline || '');
     generatedHtml = generatedHtml.replace(/{{email}}/g, formData.email || '');
@@ -492,8 +487,9 @@ app.post('/generate-portfolio', async (req, res) => {
       generatedHtml = generatedHtml.replace('<!-- SKILLS -->', skillsHtml);
     }
 
+
     // Projects
-    if (formData.projects && formData.projects.length > 0) {
+     if (formData.projects && formData.projects.length > 0) {
       let projectsHtml = '';
       if (template === 'classic') {
         projectsHtml = formData.projects.map(project => `
@@ -563,8 +559,8 @@ app.post('/generate-portfolio', async (req, res) => {
       generatedHtml = generatedHtml.replace('<!-- PROJECTS -->', projectsHtml);
     }
 
-    // Achievements (Testimonials)
-    if (formData.achievements) {
+    // Achievements
+     if (formData.achievements) {
         let achievementsHtml = '';
         if (template === 'classic') {
           achievementsHtml = formData.achievements.split('\n').filter(Boolean).map(achievement => `
@@ -581,23 +577,14 @@ app.post('/generate-portfolio', async (req, res) => {
         }
         generatedHtml = generatedHtml.replace('<!-- TESTIMONIALS -->', achievementsHtml);
     }
-
-    // --- End of template replacement logic ---
-
-    const generatedDir = path.join(__dirname, 'generated');
-    await fs.mkdir(generatedDir, { recursive: true });
-
-    const portfolioFileName = `${formData.fullName.replace(/\s+/g, '_')}_${Date.now()}.html`;
-    const portfolioPath = path.join(generatedDir, portfolioFileName);
-
-    await fs.writeFile(portfolioPath, generatedHtml, 'utf8');
-
-    res.json({ url: `http://localhost:${port}/generated/${portfolioFileName}` });
+    // --- Return HTML directly in JSON ---
+    res.json({ html: generatedHtml });
   } catch (error) {
     console.error('Error in /generate-portfolio:', error);
-    res.status(500).send('Error generating portfolio');
+    res.status(500).json({ error: 'Failed to generate portfolio' });
   }
 });
+
 
 app.post('/api/download-html', async (req, res) => {
   const { formData, template } = req.body;
