@@ -94,7 +94,7 @@ app.post('/api/auth/signup', async (req, res) => {
     const payload = { user: { id: user.id } };
     jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' }, (err, token) => {
       if (err) throw err;
-      res.json({ token });
+      res.json({ token, id: user.id });
     });
   } catch (err) {
     console.error(err.message);
@@ -118,7 +118,7 @@ app.post('/api/auth/login', async (req, res) => {
     const payload = { user: { id: user.id } };
     jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' }, (err, token) => {
       if (err) throw err;
-      res.json({ token });
+      res.json({ token, name: user.name, email: user.email, id: user.id });
     });
   } catch (err) {
     console.error(err.message);
@@ -161,7 +161,7 @@ app.post('/api/auth/google', async (req, res) => {
     // Create and return JWT
     const jwtPayload = { user: { id: user.id } };
     const token = jwt.sign(jwtPayload, process.env.JWT_SECRET, { expiresIn: '5h' });
-    res.json({ token });
+    res.json({ token, id: user.id });
   } catch (err) {
     console.error('Google auth error:', err.message);
     res.status(500).send('Server error during Google authentication');

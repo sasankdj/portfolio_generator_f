@@ -7,6 +7,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState(null);
   const { login, isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
@@ -16,26 +17,52 @@ const LoginPage = () => {
     }
   }, [isLoggedIn, navigate]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // For demo purposes, any login is successful
-    login({ name: 'User' }); // Pass a default user object
-    navigate('/home');
+  const handleSubmit = async (e) => {
+     e.preventDefault();
+    setLoading(true);
+    setAuthError(null);
+
+    try {
+      const response = await fetch('http://localhost:3001/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        login({ name: data.name, email: data.email, token: data.token, id: data.id });
+        navigate('/home');
+      } else {
+        // Specific error message from the backend
+        setAuthError(data.msg || "Login failed. Please check your credentials.");
+      }
+    } catch (error) {
+      // Handle network errors or other unexpected errors
+      console.error("Login failed", error);
+      // Generic error message
+      setAuthError("An unexpected error occurred. Please try again.");
+    }
+    setLoading(false);
   };
 
-  const handleGoogleSignIn = useGoogleLogin({ // onSuccess is now async
+  const handleGoogleSignIn = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
         const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: {
             Authorization: `Bearer ${tokenResponse.access_token}`,
+
           },
-        });
+        }).then(r => r.json());
         const userInfo = await userInfoRes.json();
         login({ name: userInfo.name, email: userInfo.email });
       } catch (error) {
         console.error("Failed to fetch user info from Google", error);
-        login({ name: 'User' }); // Fallback to default user
+        login({ name: 'User' });
       }
       navigate('/home');
     },
@@ -94,6 +121,12 @@ const LoginPage = () => {
               className="mt-1 block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm bg-white/50 placeholder:text-gray-500/90 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+
+          {authError && (
+            <div className="text-red-500 text-sm text-left">
+              {authError}
+            </div>
+          )}
 
           <button
             type="submit"

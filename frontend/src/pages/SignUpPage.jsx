@@ -47,19 +47,39 @@ const SignUpPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (validateForm()) {
-      // Your sign-up logic goes here
-      console.log("Creating account with:", { name, email, password });
-      alert("Account created successfully!");
-      login({ name }); // Pass the user's name
-      navigate("/home");
+      setLoading(true);
+
+      try {
+        const response = await fetch('http://localhost:3001/api/auth/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name, email, password }),
+        });
+
+          const data = await response.json();
+          if (response.ok) {
+            login({ name, email, token: data.token, id: data.id });
+            navigate("/home");
+          } else {
+            setErrors({ general: data.msg || "Sign up failed. Please try again." });
+          }
+      } catch (error) {
+        console.error("Sign up failed", error);
+        setErrors({
+          general: "An unexpected error occurred. Please try again.",
+        });
+      }
+      setLoading(false);
     }
   };
 
-  const handleGoogleSignIn = useGoogleLogin({ 
+  const handleGoogleSignIn = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
         const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
@@ -71,7 +91,7 @@ const SignUpPage = () => {
         login({ name: userInfo.name, email: userInfo.email });
       } catch (error) {
         console.error("Failed to fetch user info from Google", error);
-        login({ name: 'User' }); // Fallback to default user
+        login({ name: 'User' });
       }
       navigate('/home');
     },
@@ -183,12 +203,18 @@ const SignUpPage = () => {
                 errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
               }`}
             />
-            {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
-            )}
-          </div>
+          {errors.confirmPassword && (
+            <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+          )}
+        </div>
 
-          <button
+        {errors.general && (
+          <div className="text-red-500 text-sm text-left">
+            {errors.general}
+          </div>
+        )}
+
+        <button
             type="submit"
             className="w-full py-3 font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-colors"
           >
@@ -235,5 +261,6 @@ const SignUpPage = () => {
     </div>
   );
 };
+
 
 export default SignUpPage;

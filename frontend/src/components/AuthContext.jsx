@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }) => {
     if (userData) {
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('token', userData.token);
     }
   };
 
@@ -33,6 +34,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
     // If you add Google sign-out, you can call it here.
   };
 
