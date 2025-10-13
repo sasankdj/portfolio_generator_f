@@ -6,7 +6,7 @@ import FormInputs from "../components/FormInputs";
 
 function Form() {
   const { state } = useLocation();
-  const { userDetails, updateUserDetails, uploadResume, loading } = usePortfolio();
+  const { userDetails, updateUserDetails, uploadResume, loading, saveUserDetails } = usePortfolio();
   const navigate = useNavigate();
 
   const selectedTemplateId = state?.selectedTemplate || 'classic';
@@ -18,10 +18,11 @@ function Form() {
     setFormData(userDetails);
   }, [userDetails]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     updateUserDetails(formData);
-    toast.success('Portfolio details saved!');
+    // Also save to the database
+    await saveUserDetails(formData);
   };
 
   const previewInNewTab = async () => {
@@ -122,11 +123,6 @@ function Form() {
           </button>
         </div>
         <div className="bg-white p-8 rounded-xl shadow-lg relative">
-          {loading && (
-            <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10 rounded-xl">
-              <p className="text-xl font-semibold animate-pulse">Parsing Resume...</p>
-            </div>
-          )}
           <h1 className="text-3xl font-bold text-gray-800 mb-6">Portfolio Details</h1>
           <FormInputs formData={formData} setFormData={setFormData} image={image} setImage={setImage} uploadResume={uploadResume} loading={loading} />
         </div>

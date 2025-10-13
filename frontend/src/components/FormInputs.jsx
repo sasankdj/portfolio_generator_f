@@ -3,7 +3,6 @@ import { toast } from "react-toastify";
 
 const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
   const [enhancing, setEnhancing] = useState(false);
-  const [enhancedText, setEnhancedText] = useState("");
   const fileInputRef = useRef(null);
   const [globallyEnhancedData, setGloballyEnhancedData] = useState(null);
 
@@ -76,7 +75,7 @@ const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
       }));
     } catch (err) {
       console.error(err);
-      alert("Failed to parse resume with AI");
+      toast.error("Failed to parse resume with AI");
     }
   };
 
@@ -85,26 +84,7 @@ const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
     if (file) await uploadResume(file);
   };
 
-  // Enhance Text with AI
-  const enhanceText = async (field, text) => {
-    if (!text || text.trim().length < 5) return alert("Write something first");
-    setEnhancing(true);
-    setEnhancedText("");
 
-    try {
-      const resp = await fetch("http://localhost:3001/api/enhance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, field }),
-      });
-      const data = await resp.json();
-      setEnhancedText(data.enhanced || "");
-    } catch (err) {
-      console.error(err);
-      alert("Error enhancing text");
-    }
-    setEnhancing(false);
-  };
 
   // Enhance All with AI
   const enhanceAllWithAI = async () => {
@@ -183,21 +163,21 @@ const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
             value={formData.fullName}
             onChange={handleInputChange}
             placeholder="Full Name"
-            className="input"
+            className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
           />
           <input
             name="email"
             value={formData.email}
             onChange={handleInputChange}
             placeholder="Email"
-            className="input"
+            className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
           />
           <input
             name="linkedin"
             value={formData.linkedin}
             onChange={handleInputChange}
             placeholder="LinkedIn URL"
-            className="input"
+            className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
           />
         </div>
         <div className="mt-4">
@@ -205,7 +185,7 @@ const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
             type="file"
             onChange={handleImageChange}
             accept="image/*"
-            className="input"
+            className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
           />
           {image && (
             <img
@@ -225,7 +205,7 @@ const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
           value={formData.careerObjective}
           onChange={handleInputChange}
           placeholder="Career Objective / Professional Bio"
-          className="input h-24"
+          className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1 h-24"
         />
         {globallyEnhancedData?.careerObjective && (
           <div className="mt-4 p-4 border-l-4 border-purple-400 bg-purple-50">
@@ -259,19 +239,7 @@ const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
           value={formData.skills}
           onChange={handleInputChange}
           placeholder="Skills (comma-separated)"
-          className="input"
-        />
-      </div>
-
-      {/* Skills */}
-      <div className="p-6 border rounded-lg">
-        <h3 className="text-xl font-semibold mb-4">Skills</h3>
-        <input
-          name="skills"
-          value={formData.skills}
-          onChange={handleInputChange}
-          placeholder="Skills (comma-separated)"
-          className="input"
+          className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
         />
       </div>
 
@@ -289,21 +257,21 @@ const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
                 value={project.title || ""}
                 onChange={(e) => handleProjectChange(index, e)}
                 placeholder={`Project ${index + 1} Title`}
-                className="input"
+                className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
               />
               <input
                 name="description"
                 value={project.description || ""}
                 onChange={(e) => handleProjectChange(index, e)}
                 placeholder="Description"
-                className="input"
+                className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
               />
               <input
                 name="technologies"
                 value={project.technologies || ""}
                 onChange={(e) => handleProjectChange(index, e)}
                 placeholder="Technologies"
-                className="input"
+                className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
               />
               {globallyEnhancedData?.projects?.[index] && (
                 <div className="md:col-span-3 mt-2 p-3 border-l-4 border-purple-400 bg-purple-50 rounded-r-lg">
@@ -328,27 +296,27 @@ const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
                 value={exp.jobTitle || ""}
                 onChange={(e) => handleExperienceChange(index, e)}
                 placeholder="Job Title"
-                className="input"
+                className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
               />
               <input
                 name="company"
                 value={exp.company || ""}
                 onChange={(e) => handleExperienceChange(index, e)}
                 placeholder="Company"
-                className="input"
+                className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
               />
               <input
                 name="duration"
                 value={exp.duration || ""}
                 onChange={(e) => handleExperienceChange(index, e)}
                 placeholder="Duration"
-                className="input"
+                className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
               />
               <textarea
                 value={(exp.responsibilities || []).join("\n")}
                 onChange={(e) => handleResponsibilitiesChange(index, e)}
                 placeholder="Responsibilities (one per line)"
-                className="input mt-2 h-24"
+                className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1 mt-2 h-24"
               />
             </div>
           ))}
@@ -362,7 +330,7 @@ const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
           value={formData.achievements}
           onChange={handleInputChange}
           placeholder="Achievements or Testimonials"
-          className="input h-24"
+          className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1 h-24"
         />
         {globallyEnhancedData?.achievements && (
           <div className="mt-4 p-4 border-l-4 border-purple-400 bg-purple-50">

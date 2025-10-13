@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../components/AuthContext";
 import { useGoogleLogin } from "@react-oauth/google";
+import { usePortfolio } from "../components/PortfolioContext";
+import { toast } from "react-toastify";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -9,6 +11,7 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState(null);
   const { login, isLoggedIn } = useAuth();
+  const { fetchUserDetails } = usePortfolio();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,7 +37,9 @@ const LoginPage = () => {
       const data = await response.json();
 
       if (response.ok) {
-        login({ name: data.name, email: data.email, token: data.token, id: data.id });
+        const userData = { name: data.name, email: data.email, token: data.token, id: data.id };
+        login(userData);
+        await fetchUserDetails(userData.token);
         navigate('/home');
       } else {
         // Specific error message from the backend
@@ -59,14 +64,17 @@ const LoginPage = () => {
           },
         }).then(r => r.json());
         const userInfo = await userInfoRes.json();
-        login({ name: userInfo.name, email: userInfo.email });
+        // Note: Google Sign-In here won't have our app's token/id for backend data.
+        // This flow would need adjustment if Google-signed-in users need to save data to your DB.
+        // For now, it logs them in on the client-side.
+        login({ name: userInfo.name, email: userInfo.email, id: userInfo.sub }); // Use Google's `sub` as a unique ID
       } catch (error) {
         console.error("Failed to fetch user info from Google", error);
         login({ name: 'User' });
       }
       navigate('/home');
     },
-    onError: () => alert('Google sign-in failed. Please try again.'),
+    onError: () => toast.error('Google sign-in failed. Please try again.'),
   });
 
   return (

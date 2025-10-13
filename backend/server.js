@@ -183,9 +183,11 @@ app.get('/api/portfolio', protect, async (req, res) => {
 });
 
 app.post('/api/portfolio', protect, async (req, res) => {
-  const { formData } = req.body;
+  // The entire request body is the form data, excluding the userId which we get from the token.
+  const { userId, ...formData } = req.body;
   const portfolioData = { user: req.user.id, data: formData };
   const portfolio = await Portfolio.findOneAndUpdate({ user: req.user.id }, portfolioData, { new: true, upsert: true });
+  
   res.json(portfolio);
 });
 
@@ -265,6 +267,9 @@ app.post('/api/upload-resume', upload.single('resume'), async (req, res) => {
     // Extract raw text from PDF or DOCX
     if (req.file.mimetype === 'application/pdf') {
       const pdf = (await import('pdf-parse')).default;
+      // Set the worker source for pdf-parse (uses pdfjs-dist internally)
+      pdf.workerSrc = path.join(__dirname, 'node_modules', 'pdfjs-dist', 'build', 'pdf.worker.js');
+
       const data = await pdf(req.file.buffer);
       text = data.text;
       

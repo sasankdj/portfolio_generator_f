@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../components/AuthContext";
 import { useGoogleLogin } from "@react-oauth/google";
+import { usePortfolio } from "../components/PortfolioContext";
+import { toast } from "react-toastify";
 
 const SignUpPage = () => {
   // Add state for the new 'name' field
@@ -13,6 +15,7 @@ const SignUpPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login, isLoggedIn } = useAuth();
+  const { fetchUserDetails } = usePortfolio();
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -64,7 +67,9 @@ const SignUpPage = () => {
 
           const data = await response.json();
           if (response.ok) {
-            login({ name, email, token: data.token, id: data.id });
+            const userData = { name, email, token: data.token, id: data.id };
+            login(userData);
+            await fetchUserDetails(userData.token); // This will just initialize an empty state
             navigate("/home");
           } else {
             setErrors({ general: data.msg || "Sign up failed. Please try again." });
@@ -88,14 +93,16 @@ const SignUpPage = () => {
           },
         });
         const userInfo = await userInfoRes.json();
-        login({ name: userInfo.name, email: userInfo.email });
+        // Note: Google Sign-In here won't have our app's token/id for backend data.
+        // This flow would need adjustment if Google-signed-in users need to save data to your DB.
+        login({ name: userInfo.name, email: userInfo.email, id: userInfo.sub });
       } catch (error) {
         console.error("Failed to fetch user info from Google", error);
         login({ name: 'User' });
       }
       navigate('/home');
     },
-    onError: () => alert('Google sign-in failed. Please try again.'),
+    onError: () => toast.error('Google sign-in failed. Please try again.'),
   });
 
   return (

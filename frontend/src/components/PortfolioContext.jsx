@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { useAuth } from './AuthContext';
 
 const PortfolioContext = createContext();
 
@@ -8,6 +9,7 @@ export const usePortfolio = () => {
 };
 
 export const PortfolioProvider = ({ children }) => {
+  const { user } = useAuth();
   const [userDetails, setUserDetails] = useState({
     fullName: '',
     email: '',
@@ -70,6 +72,68 @@ export const PortfolioProvider = ({ children }) => {
     } else {
       setUserDetails(details);
       localStorage.setItem('userDetails', JSON.stringify(details));
+    }
+  };
+
+  const fetchUserDetails = async (token) => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      // The backend identifies the user via the token, so no userId is needed in the URL
+      const response = await fetch(`http://localhost:3001/api/portfolio`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 404) {
+        console.log("No portfolio data found for this user. Starting fresh.");
+        // No data found, which is fine for a new user. The form will be empty.
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch portfolio data.');
+      }
+
+      const data = await response.json();
+      updateUserDetails(data); // This updates both state and localStorage
+      toast.info('Your saved portfolio details have been loaded.');
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      toast.error('Could not load your saved details.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveUserDetails = async (detailsToSave) => {
+    if (!user || !user.id || !user.token) {
+      toast.warn('You must be logged in to save your details.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:3001/api/portfolio`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`,
+        },
+        // The backend can get the userId from the token, but sending it is also fine.
+        body: JSON.stringify({ userId: user.id, ...detailsToSave }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save portfolio data.');
+      }
+
+      toast.success('Your portfolio details have been saved!');
+    } catch (error) {
+      console.error('Error saving user details:', error);
+      toast.error('Could not save your details. Your changes are saved locally.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -183,8 +247,9 @@ export const PortfolioProvider = ({ children }) => {
       githubUsername,
       netlifyUsername,
       connectGithub,
-      connectNetlify,
-      downloadPortfolioHtml
+      connectNetlify,      downloadPortfolioHtml,
+      fetchUserDetails, // Add this
+      saveUserDetails,
     }}>
       {children}
     </PortfolioContext.Provider>

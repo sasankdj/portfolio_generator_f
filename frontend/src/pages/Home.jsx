@@ -26,7 +26,7 @@ export default function Home() {
               onClick={() => {
                 if (!hasResume) {
                   toast.error('Please upload your resume first.');
-                  navigate('/upload');
+                  navigate('/templates');
                   return;
                 }
                 if (hasPortfolio) {
