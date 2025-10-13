@@ -49,7 +49,7 @@
   <header class="fixed w-full bg-gray-900 bg-opacity-90 backdrop-blur-sm shadow-md z-50 border-b border-green-900 border-opacity-20">
     <div class="container mx-auto px-6 py-4">
       <div class="flex items-center justify-between">
-        <a href="#" class="text-2xl font-bold text-green-400">{{fullName}}</a>
+        <a href="#" class="text-2xl font-bold text-green-400">Sasank Kota</a>
         <nav class="hidden md:flex space-x-8">
           <a href="#home" class="text-gray-300 hover:text-green-400 font-medium transition duration-300">Home</a>
           <a href="#about" class="text-gray-300 hover:text-green-400 font-medium transition duration-300">About</a>
@@ -71,10 +71,10 @@
     <div class="container mx-auto px-6 flex flex-col md:flex-row items-center">
       <div class="md:w-1/2 mb-12 md:mb-0">
         <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6 text-gray-100">
-          {{headline}}
+          data analyst
         </h1>
         <p class="text-xl mb-8 text-gray-300 max-w-lg">
-         {{careerObjective}}
+         Highly analytical Data Analyst with a strong foundation in Python (Pandas, NumPy), SQL, and Power BI, eager to leverage data-driven insights to optimize business processes and enhance decision-making. Proven ability to develop interactive dashboards, build predictive models, and streamline data workflows, aiming to contribute to organizational growth and efficiency.
         </p>
         <div class="flex space-x-4">
           <a href="#contact" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-md font-semibold transition duration-300 inline-block">
@@ -110,15 +110,28 @@
           </div>
         </div>
         <div class="md:w-2/3 md:pl-12">
-          <h3 class="text-2xl font-semibold text-gray-100 mb-4">{{headline}}</h3>
+          <h3 class="text-2xl font-semibold text-gray-100 mb-4">Sasank Kota</h3>
           <p class="text-gray-300 mb-6 leading-relaxed">
-            {{careerObjective}}
+            Highly analytical Data Analyst with a strong foundation in Python (Pandas, NumPy), SQL, and Power BI, eager to leverage data-driven insights to optimize business processes and enhance decision-making. Proven ability to develop interactive dashboards, build predictive models, and streamline data workflows, aiming to contribute to organizational growth and efficiency.
           </p>
           
           
           <h4 class="text-xl font-medium text-gray-100 mb-3">Technical Expertise</h4>
           <div class="flex flex-wrap gap-3 mb-8">
-            <!-- SKILLS -->
+            <span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">Python (Pandas</span>
+<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">NumPy)</span>
+<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">SQL</span>
+<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">Excel</span>
+<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">Power BI</span>
+<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">Matplotlib</span>
+<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">MongoDB</span>
+<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">MERN Stack (React.js</span>
+<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">Node.js</span>
+<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">Express.js)</span>
+<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">Regression</span>
+<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">Classification</span>
+<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">Clustering</span>
+<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">OpenCV</span>
           </div>
           
           <div class="flex space-x-4">
@@ -146,7 +159,42 @@
       </div>
       
       <div class="grid md:grid-cols-2 gap-8">
-        <!-- PROJECTS -->
+        
+        <div class="project-card bg-gray-800 rounded-lg overflow-hidden border border-gray-700 shadow-lg transition duration-300 hover:border-green-600 hover:border-opacity-50">
+          <div class="p-6">
+            <h3 class="text-2xl font-semibold text-gray-100 mb-2">Sales Performance Dashboard</h3>
+            <p class="text-gray-300 mb-4">Engineered an interactive Power BI dashboard by analyzing complex sales datasets and integrating SQL queries for real-time KPI monitoring and trend identification. This solution enhanced decision-making speed by 40% and accelerated leadership's ability to pinpoint underperforming regions by 2x.</p>
+            <div class="mb-4">
+              <h4 class="font-medium text-green-400 mb-2">Technologies</h4>
+              <div class="flex flex-wrap gap-2">
+                <span class="px-3 py-1 bg-gray-700 text-green-400 text-xs rounded-lg">Power BI</span><span class="px-3 py-1 bg-gray-700 text-green-400 text-xs rounded-lg">SQL</span>
+              </div>
+            </div>
+            <a href="#" class="text-green-400 hover:text-green-300 font-medium hover:underline inline-flex items-center">
+              View project
+              <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+          </div>
+        </div>
+        
+
+        <div class="project-card bg-gray-800 rounded-lg overflow-hidden border border-gray-700 shadow-lg transition duration-300 hover:border-green-600 hover:border-opacity-50">
+          <div class="p-6">
+            <h3 class="text-2xl font-semibold text-gray-100 mb-2">Customer Churn Analysis</h3>
+            <p class="text-gray-300 mb-4">Conducted comprehensive churn analysis on telecom customer data using Python (Pandas, NumPy) to identify critical patterns. Developed a Logistic Regression model achieving ~82% accuracy, which informed data-driven retention planning and led to recommendations projected to reduce churn risk by 15%.</p>
+            <div class="mb-4">
+              <h4 class="font-medium text-green-400 mb-2">Technologies</h4>
+              <div class="flex flex-wrap gap-2">
+                <span class="px-3 py-1 bg-gray-700 text-green-400 text-xs rounded-lg">Python (Pandas</span><span class="px-3 py-1 bg-gray-700 text-green-400 text-xs rounded-lg">NumPy)</span><span class="px-3 py-1 bg-gray-700 text-green-400 text-xs rounded-lg">Logistic Regression</span>
+              </div>
+            </div>
+            <a href="#" class="text-green-400 hover:text-green-300 font-medium hover:underline inline-flex items-center">
+              View project
+              <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+          </div>
+        </div>
+        
       </div>
     </div>
   </section>
@@ -162,7 +210,16 @@
       </div>
       
       <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-        <!-- TESTIMONIALS -->
+        
+          <div class="testimonial-card bg-gray-700 p-8 rounded-lg border border-gray-600 hover:border-green-600 hover:border-opacity-50 transition duration-300">
+            <p class="text-gray-300 italic">"Streamlined reporting workflows, reducing manual effort by 40% and significantly boosting team efficiency during an internship."</p>
+          </div>
+          
+
+          <div class="testimonial-card bg-gray-700 p-8 rounded-lg border border-gray-600 hover:border-green-600 hover:border-opacity-50 transition duration-300">
+            <p class="text-gray-300 italic">"Developed and deployed a customer churn prediction model with ~80% accuracy, directly informing targeted retention strategies."</p>
+          </div>
+          
       </div>
     </div>
   </section>
@@ -226,7 +283,7 @@
               </a>
             </div>
             <p class="text-gray-400 mt-6">
-              Or email directly: <a href="mailto:{{email}}" class="text-green-400 hover:underline">{{email}}</a>
+              Or email directly: <a href="mailto:kotasasank123@gmail.com" class="text-green-400 hover:underline">kotasasank123@gmail.com</a>
             </p>
           </div>
         </div>
@@ -239,7 +296,7 @@
     <div class="container mx-auto px-6">
       <div class="flex flex-col md:flex-row justify-between items-center">
         <div class="mb-4 md:mb-0 text-center md:text-left">
-          <p>Designed & Built by {{fullName}}</p>
+          <p>Designed & Built by Sasank Kota</p>
           <p class="text-xs mt-1">© 2025 All Rights Reserved</p>
         </div>
         <div class="flex space-x-4">

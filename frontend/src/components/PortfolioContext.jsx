@@ -12,6 +12,7 @@ export const PortfolioProvider = ({ children }) => {
   const { user } = useAuth();
   const [userDetails, setUserDetails] = useState({
     fullName: '',
+    headline: '',
     email: '',
     linkedin: '',
     skills: '',

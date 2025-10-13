@@ -59,6 +59,7 @@ const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
       setFormData((prev) => ({
         ...prev,
         fullName: data.fullName || prev.fullName,
+        headline: data.headline || prev.headline,
         email: data.email || prev.email,
         linkedin: data.linkedin || prev.linkedin,
         careerObjective: data.careerObjective || prev.careerObjective,
@@ -178,6 +179,13 @@ const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
             onChange={handleInputChange}
             placeholder="LinkedIn URL"
             className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
+          />
+          <input
+            name="headline"
+            value={formData.headline}
+            onChange={handleInputChange}
+            placeholder="Headline (e.g., Senior Software Engineer)"
+            className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1 md:col-span-2"
           />
         </div>
         <div className="mt-4">

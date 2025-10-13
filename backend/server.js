@@ -287,6 +287,7 @@ app.post('/api/upload-resume', upload.single('resume'), async (req, res) => {
 Extract the following fields from this resume text as JSON only (no explanations, no markdown):
 {
   "fullName": "",
+  "headline": "",
   "email": "",
   "linkedin": "",
   "careerObjective": "",
@@ -344,6 +345,12 @@ const parseResumeText = (text) => {
   const nameMatch = text.match(/^([A-Z][a-z]+ [A-Z][a-z]+)/m);
   if (nameMatch) {
     response.fullName = nameMatch[0];
+  }
+
+  // Try to find a headline (a short line under the name)
+  const headlineMatch = text.split('\n')[1]; // Very basic heuristic
+  if (headlineMatch && headlineMatch.length < 100 && !headlineMatch.includes('@')) {
+    response.headline = headlineMatch.trim();
   }
 
   // Try to find a LinkedIn URL
@@ -459,6 +466,7 @@ app.post('/generate-portfolio', async (req, res) => {
 
     // Simple replacements
     generatedHtml = generatedHtml.replace(/{{fullName}}/g, formData.fullName || '');
+    generatedHtml = generatedHtml.replace(/{{headline}}/g, formData.headline || '');
     generatedHtml = generatedHtml.replace(/{{email}}/g, formData.email || '');
     generatedHtml = generatedHtml.replace(/{{careerObjective}}/g, formData.careerObjective || '');
 
@@ -580,6 +588,7 @@ app.post('/api/download-html', async (req, res) => {
 
     // Simple replacements
     generatedHtml = generatedHtml.replace(/{{fullName}}/g, formData.fullName || '');
+    generatedHtml = generatedHtml.replace(/{{headline}}/g, formData.headline || '');
     generatedHtml = generatedHtml.replace(/{{email}}/g, formData.email || '');
     generatedHtml = generatedHtml.replace(/{{careerObjective}}/g, formData.careerObjective || '');
 
