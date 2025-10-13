@@ -86,26 +86,30 @@ const ai = new GoogleGenAI({
 // --- Authentication Routes ---
 app.post('/api/auth/signup', async (req, res) => {
   const { name, email, password } = req.body;
+
   try {
     let user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ msg: 'User already exists' });
     }
 
-    user = new User({ name, email, password });
+    // ✅ Hash password before saving
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
+    user = new User({ name, email, password: hashedPassword });
     await user.save();
 
     const payload = { user: { id: user.id } };
-    jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' }, (err, token) => {
-      if (err) throw err;
-      res.json({ token, id: user.id });
-    });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' });
+
+    res.json({ token, id: user.id });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Signup Error:', err);
+    res.status(500).json({ msg: 'Server error', error: err.message });
   }
 });
+
 
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
