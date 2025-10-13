@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
 
 export default function ContactUs() {
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
+
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState(null);
 
@@ -21,7 +23,7 @@ export default function ContactUs() {
     };
 
     try {
-      const res = await fetch("/api/contact", {
+      const res = await fetch(`${API_BASE_URL}/api/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

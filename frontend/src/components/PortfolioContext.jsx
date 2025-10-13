@@ -4,6 +4,8 @@ import { useAuth } from './AuthContext';
 
 const PortfolioContext = createContext();
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 export const usePortfolio = () => {
   return useContext(PortfolioContext);
 };
@@ -81,7 +83,7 @@ export const PortfolioProvider = ({ children }) => {
     setLoading(true);
     try {
       // The backend identifies the user via the token, so no userId is needed in the URL
-      const response = await fetch(`http://localhost:3001/api/portfolio`, {
+      const response = await fetch(`${API_BASE_URL}/api/portfolio`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -115,7 +117,7 @@ export const PortfolioProvider = ({ children }) => {
     }
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/portfolio`, {
+      const response = await fetch(`${API_BASE_URL}/api/portfolio`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,7 +150,7 @@ export const PortfolioProvider = ({ children }) => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/upload-resume', {
+      const response = await fetch(`${API_BASE_URL}/upload-resume`, {
         method: 'POST',
         body: formData,
       });
@@ -205,7 +207,7 @@ export const PortfolioProvider = ({ children }) => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/download-html', {
+      const response = await fetch(`${API_BASE_URL}/api/download-html`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ formData: userDetails, template }),

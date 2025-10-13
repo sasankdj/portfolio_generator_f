@@ -24,7 +24,7 @@ const require = createRequire(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = 3001; // Backend runs on a different port
+const port = process.env.PORT || 3001; // Use environment variable for port
 
 // Increase the server timeout to 5 minutes (300,000 ms) to handle long AI requests
 app.timeout = 300000;
@@ -588,7 +588,7 @@ app.post('/generate-portfolio', async (req, res) => {
 
     await fs.writeFile(portfolioPath, generatedHtml, 'utf8');
 
-    res.json({ url: `http://localhost:3001/generated/${portfolioFileName}` });
+    res.json({ url: `http://localhost:${port}/generated/${portfolioFileName}` });
   } catch (error) {
     console.error('Error in /generate-portfolio:', error);
     res.status(500).send('Error generating portfolio');

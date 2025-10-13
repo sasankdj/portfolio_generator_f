@@ -2,6 +2,8 @@ import React, { useState, useRef } from "react";
 import { toast } from "react-toastify";
 import { usePortfolio } from "./PortfolioContext";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const FormInputs = ({ formData, setFormData, image, setImage}) => {
   const [isParsingResume, setIsParsingResume] = useState(false);
   const { setLoading: setGlobalLoading } = usePortfolio();
@@ -57,7 +59,7 @@ const FormInputs = ({ formData, setFormData, image, setImage}) => {
     const toastId = toast.loading("Uploading resume...");
 
     try {
-      const resp = await fetch("http://localhost:3001/api/upload-resume", {
+      const resp = await fetch(`${API_BASE_URL}/api/upload-resume`, {
         method: "POST",
         body: formDataFile,
       });
@@ -115,7 +117,7 @@ const FormInputs = ({ formData, setFormData, image, setImage}) => {
     setGlobalLoading(true);
     setGloballyEnhancedData(null);
     try {
-      const resp = await fetch("http://localhost:3001/api/enhance-all", {
+      const resp = await fetch(`${API_BASE_URL}/api/enhance-all`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ formData }),

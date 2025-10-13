@@ -5,6 +5,8 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { usePortfolio } from "../components/PortfolioContext";
 import { toast } from "react-toastify";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const SignUpPage = () => {
   // Add state for the new 'name' field
   const [name, setName] = useState("");
@@ -57,7 +59,7 @@ const SignUpPage = () => {
       setLoading(true);
 
       try {
-        const response = await fetch('http://localhost:3001/api/auth/signup', {
+        const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

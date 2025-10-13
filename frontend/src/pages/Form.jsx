@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { usePortfolio } from "../components/PortfolioContext";
 import FormInputs from "../components/FormInputs";
+import Footer from "../components/Footer";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 function Form() {
   const { state } = useLocation();
@@ -28,7 +30,7 @@ function Form() {
   const previewInNewTab = async () => {
     updateUserDetails(formData); // Update context before action
     try {
-      const response = await fetch('http://localhost:3001/generate-portfolio', {
+      const response = await fetch(`${API_BASE_URL}/generate-portfolio`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -54,7 +56,7 @@ function Form() {
   const createAndNavigate = async () => {
     updateUserDetails(formData); // Update context before action
     try {
-      const response = await fetch('http://localhost:3001/generate-portfolio', {
+      const response = await fetch(`${API_BASE_URL}/generate-portfolio`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -81,7 +83,7 @@ function Form() {
   const downloadHtmlFile = async () => {
      updateUserDetails(formData); // Update context before action
      try {
-       const response = await fetch('http://localhost:3001/api/download-html', {
+       const response = await fetch(`${API_BASE_URL}/api/download-html`, {
          method: 'POST',
          headers: {
            'Content-Type': 'application/json',
@@ -157,8 +159,11 @@ function Form() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
+    
   );
+  
 }
 
 export default Form;
