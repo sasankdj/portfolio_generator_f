@@ -7,6 +7,7 @@ import fetch from "node-fetch";
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 import { GoogleGenAI } from "@google/genai";
 import Tesseract from 'tesseract.js'; 
 import { OAuth2Client } from 'google-auth-library';
@@ -19,10 +20,14 @@ import Portfolio from './models/Portfolio.js';
 
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
+const require = createRequire(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = 3001; // Backend runs on a different port
+
+// Increase the server timeout to 5 minutes (300,000 ms) to handle long AI requests
+app.timeout = 300000;
 
 const oAuth2Client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, 'postmessage');
 
@@ -266,13 +271,9 @@ app.post('/api/upload-resume', upload.single('resume'), async (req, res) => {
 
     // Extract raw text from PDF or DOCX
     if (req.file.mimetype === 'application/pdf') {
-      const pdf = (await import('pdf-parse')).default;
-      // Set the worker source for pdf-parse (uses pdfjs-dist internally)
-      pdf.workerSrc = path.join(__dirname, 'node_modules', 'pdfjs-dist', 'build', 'pdf.worker.js');
-
+      const pdf = (await import('pdf-parse/lib/pdf-parse.js')).default;
       const data = await pdf(req.file.buffer);
       text = data.text;
-      
     } else if (req.file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
       const result = await mammoth.extractRawText({ buffer: req.file.buffer });
       text = result.value;
@@ -328,7 +329,7 @@ ${text}
 
   } catch (error) {
     console.error('Error processing resume:', error);
-    res.status(500).send('Error processing resume.');
+    res.status(500).json({ error: 'Error processing resume file on the server.' });
   }
 });
 

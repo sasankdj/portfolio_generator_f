@@ -1,7 +1,10 @@
 import React, { useState, useRef } from "react";
 import { toast } from "react-toastify";
+import { usePortfolio } from "./PortfolioContext";
 
-const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
+const FormInputs = ({ formData, setFormData, image, setImage}) => {
+  const [isParsingResume, setIsParsingResume] = useState(false);
+  const { setLoading: setGlobalLoading } = usePortfolio();
   const [enhancing, setEnhancing] = useState(false);
   const fileInputRef = useRef(null);
   const [globallyEnhancedData, setGloballyEnhancedData] = useState(null);
@@ -48,14 +51,27 @@ const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
     if (!file) return;
     const formDataFile = new FormData();
     formDataFile.append("resume", file);
+    setIsParsingResume(true);
+    setGlobalLoading(true);
+
+    const toastId = toast.loading("Uploading resume...");
 
     try {
       const resp = await fetch("http://localhost:3001/api/upload-resume", {
         method: "POST",
         body: formDataFile,
       });
+
+      if (!resp.ok) {
+        toast.update(toastId, { render: "Upload failed.", type: "error", isLoading: false, autoClose: 5000 });
+        const errorData = await resp.json().catch(() => ({ error: "Failed to parse resume. The server returned an invalid response." }));
+        throw new Error(errorData.error || `Server responded with status ${resp.status}`);
+      }
+
+      toast.update(toastId, { render: "Resume uploaded. Parsing with AI...", type: "info", isLoading: true });
       const data = await resp.json();
 
+      toast.update(toastId, { render: "Successfully parsed resume!", type: "success", isLoading: false, autoClose: 5000 });
       setFormData((prev) => ({
         ...prev,
         fullName: data.fullName || prev.fullName,
@@ -76,7 +92,13 @@ const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
       }));
     } catch (err) {
       console.error(err);
-      toast.error("Failed to parse resume with AI");
+      toast.update(toastId, { render: err.message || "Failed to parse resume.", type: "error", isLoading: false, autoClose: 5000 });
+    } finally {
+      setIsParsingResume(false);
+      setGlobalLoading(false);
+      if (toast.isActive(toastId) && toast.isLoading(toastId)) {
+        toast.dismiss(toastId);
+      }
     }
   };
 
@@ -90,6 +112,7 @@ const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
   // Enhance All with AI
   const enhanceAllWithAI = async () => {
     setEnhancing(true);
+    setGlobalLoading(true);
     setGloballyEnhancedData(null);
     try {
       const resp = await fetch("http://localhost:3001/api/enhance-all", {
@@ -110,6 +133,7 @@ const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
       toast.error("Error enhancing portfolio. Please try again.");
     } finally {
       setEnhancing(false);
+      setGlobalLoading(false);
     }
   };
 
@@ -152,9 +176,9 @@ const FormInputs = ({ formData, setFormData, image, setImage, loading }) => {
           <button
             onClick={() => fileInputRef.current.click()}
             className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-            disabled={loading}
+            disabled={isParsingResume}
           >
-            {loading ? "Parsing..." : "📄 Upload Resume & Autofill"}
+            {isParsingResume ? "Parsing..." : "📄 Upload Resume & Autofill"}
           </button>
         </div>
 
