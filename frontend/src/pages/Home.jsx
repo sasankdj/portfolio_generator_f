@@ -6,7 +6,8 @@ import { useAuth } from '../components/AuthContext';
 
 export default function Home() {
   const navigate = useNavigate();
-  const { hasResume, hasPortfolio, portfolioLink, userDetails, connectGithub } = usePortfolio(); const { user } = useAuth();
+  const { hasResume, hasPortfolio, portfolioLink } = usePortfolio();
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 font-sans">
@@ -15,46 +16,77 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-tr from-black/30 via-black/20 to-black/30 rounded-3xl animate-fade-in"></div>
         <div className="relative z-10 max-w-4xl mx-auto text-center text-white">
           <h1 className="text-6xl md:text-7xl font-extrabold mb-6 tracking-tight drop-shadow-lg animate-slide-up">
-            Welcome back, {user?.name || 'User'}! <span className="inline-block animate-bounce">🚀</span>
+            Welcome, {user?.name || 'User'}! <span className="inline-block animate-bounce">🚀</span>
           </h1>
           <p className="text-2xl md:text-3xl font-light mb-12 max-w-3xl mx-auto opacity-90 leading-relaxed">
-            Ready to showcase your skills? Create an amazing portfolio or continue where you left off.
+            Ready to build your standout portfolio? Follow the steps below to get started.
           </p>
-          <div className="flex flex-wrap justify-center gap-8">
-            <button
-              className="bg-gradient-to-r from-indigo-400 to-purple-500 hover:from-purple-500 hover:to-indigo-600 text-white px-10 py-4 rounded-full text-xl font-semibold shadow-lg transform transition-transform duration-300 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-300"
-              onClick={() => {
-                if (!hasResume) {
-                  toast.error('Please upload your resume first.');
-                  navigate('/templates');
-                  return;
-                }
-                if (hasPortfolio) {
-                  if (window.confirm('Portfolio already exists. Do you want to re-modify it?')) {
-                    navigate('/templates');
+        </div>
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-white bg-opacity-10 rounded-full animate-pulse"></div>
+        <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-white bg-opacity-10 rounded-full animate-pulse delay-1000"></div>
+      </section>
+
+      {/* Dashboard Section */}
+      <section className="max-w-7xl mx-auto mt-16 px-6 md:px-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Get Started Card */}
+        <div className="lg:col-span-2 bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-shadow duration-500 border border-gray-100">
+          <h3 className="text-3xl font-bold text-gray-800 mb-6">Get Started</h3>
+          <div className="space-y-4">
+            <div className={`flex items-center p-4 rounded-xl transition-all duration-300 ${hasResume ? 'bg-green-50 border-green-200' : 'bg-indigo-50 border-indigo-200'} border`}>
+              <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-4 ${hasResume ? 'bg-green-500' : 'bg-indigo-500'}`}>
+                <span className="text-white font-bold text-lg">1</span>
+              </div>
+              <div>
+                <h4 className={`text-lg font-semibold ${hasResume ? 'text-green-900' : 'text-indigo-900'}`}>
+                  {hasResume ? 'Resume Uploaded' : 'Upload Your Resume'}
+                </h4>
+                <p className={`text-sm ${hasResume ? 'text-green-700' : 'text-indigo-700'}`}>
+                  {hasResume ? 'Your resume has been parsed. You can re-upload if needed.' : 'Let AI extract your details to get started quickly.'}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  if (hasResume) {
+                    if (confirm('Resume already exists. Do you want to re-upload?')) navigate('/upload');
+                  } else {
+                    navigate('/upload');
                   }
-                } else {
-                  navigate('/upload');
-                }
-              }}
-            >
-              ✨ Start Portfolio
-            </button>
+                }}
+                className="ml-auto px-4 py-2 bg-white rounded-lg font-semibold text-indigo-600 shadow-sm hover:bg-indigo-50 transition-colors text-sm"
+              >
+                {hasResume ? 'Re-upload' : 'Upload'}
+              </button>
+            </div>
+            <div className="flex items-center p-4 rounded-xl bg-gray-50 border-gray-200 border">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-4 bg-gray-400">
+                <span className="text-white font-bold text-lg">2</span>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-gray-800">Review & Refine Details</h4>
+                <p className="text-sm text-gray-600">Manually add or edit your portfolio information.</p>
+              </div>
+              <button onClick={() => navigate('/form')} className="ml-auto px-4 py-2 bg-white rounded-lg font-semibold text-gray-600 shadow-sm hover:bg-gray-100 transition-colors text-sm">
+                Edit Details
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions Card */}
+        <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-shadow duration-500 border border-gray-100 flex flex-col">
+          <h3 className="text-3xl font-bold text-gray-800 mb-6">
+            Actions
+          </h3>
+          <div className="space-y-4 flex-grow flex flex-col justify-center">
             <button
-              className="border-2 border-white text-white px-10 py-4 rounded-full text-xl font-semibold hover:bg-white hover:text-indigo-700 shadow-lg transition-colors duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300"
-              onClick={() => {
-                if (hasPortfolio) {
-                  navigate('/templates');
-                } else {
-                  toast.error('No portfolio found. Please create one.');
-                  navigate('/upload');
-                }
-              }}
+              className="w-full text-left flex items-center gap-4 bg-gray-50 border border-gray-200 p-4 rounded-xl text-gray-800 font-medium hover:bg-gray-100 hover:border-gray-300 transition-colors duration-300"
+              onClick={() => navigate('/templates')}
             >
-              👀 View Profile
+              🎨 Explore Templates
             </button>
+            
             <button
-              className="border-2 border-white text-white px-10 py-4 rounded-full text-xl font-semibold hover:bg-white hover:text-indigo-700 shadow-lg transition-colors duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300"
+              className="w-full text-left flex items-center gap-4 bg-gray-50 border border-gray-200 p-4 rounded-xl text-gray-800 font-medium hover:bg-gray-100 hover:border-gray-300 transition-colors duration-300"
               onClick={() => {
                 toast.info('App Settings coming soon!');
               }}
@@ -63,152 +95,47 @@ export default function Home() {
             </button>
           </div>
         </div>
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-white bg-opacity-10 rounded-full animate-pulse"></div>
-        <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-white bg-opacity-10 rounded-full animate-pulse delay-1000"></div>
       </section>
 
-      {/* Progress & Quick Actions Section */}
-      <section className="max-w-7xl mx-auto mt-16 px-6 md:px-12 grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* Your Progress Card */}
-        <div className="bg-white rounded-3xl p-10 shadow-xl hover:shadow-2xl transition-shadow duration-500 border border-green-100 flex flex-col">
-          <h3 className="text-4xl font-extrabold text-green-900 mb-6 flex items-center gap-3">
-            📈 Your Progress
+      {/* Portfolio Status Section */}
+      <section className="max-w-7xl mx-auto mt-8 px-6 md:px-12">
+        <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-shadow duration-500 border border-gray-100">
+          <h3 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+            Your Portfolio
           </h3>
-          <p className="text-lg text-green-700 mb-8 font-light max-w-md">
-            Pick up where you left off.
-          </p>
-          <div className="space-y-5 flex-grow">
-            <div className="flex items-center gap-4 text-green-900 bg-green-50 p-5 rounded-2xl shadow-sm font-semibold text-xl">
-              <span className="text-3xl">🎨</span> Template selection
+          {hasPortfolio ? (
+            <div className="text-center">
+              <p className="text-lg text-green-700 mb-4">Your portfolio is ready! You can view, share, or edit it.</p>
+              <div className="flex flex-wrap justify-center gap-4">
+                <a href={portfolioLink} target="_blank" rel="noopener noreferrer" className="px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-colors shadow-md">
+                  👀 View Live
+                </a>
+                <button onClick={() => { navigator.clipboard.writeText(portfolioLink); toast.success('Link copied!'); }} className="px-6 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors shadow-md">
+                  🔗 Copy Link
+                </button>
+                <button onClick={() => navigate('/templates')} className="px-6 py-3 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition-colors shadow-md">
+                  ✏️ Edit
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-4 text-green-900 bg-green-100 p-5 rounded-2xl shadow-sm font-semibold text-xl">
-              <span className="text-3xl text-green-600">✔</span> Details added
-            </div>
-            <div className="flex items-center gap-4 text-green-900 bg-green-50 p-5 rounded-2xl shadow-sm font-semibold text-xl">
-              <span className="text-3xl text-blue-600">🔗</span> GitHub connected
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions Card */}
-        <div className="bg-white rounded-3xl p-10 shadow-xl hover:shadow-2xl transition-shadow duration-500 border border-indigo-100 flex flex-col">
-          <h3 className="text-4xl font-extrabold text-indigo-900 mb-8 flex items-center gap-3">
-            ⚡ Quick Actions
-          </h3>
-          <div className="space-y-6 flex-grow flex flex-col justify-center">
-            <button
-              className="w-full flex items-center gap-4 bg-indigo-50 border border-indigo-200 p-5 rounded-2xl text-indigo-900 text-xl font-medium hover:bg-indigo-100 hover:scale-105 transition-transform duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              onClick={() => {
-                if (hasResume) {
-                  if (confirm('Resume already exists. Do you want to re-upload?')) {
+          ) : (
+            <div className="text-center">
+              <p className="text-lg text-gray-600 mb-4">You haven't created a portfolio yet. Complete the steps above, then generate it.</p>
+              <button
+                onClick={() => {
+                  if (!hasResume) {
+                    toast.error('Please upload your resume first.');
                     navigate('/upload');
+                    return;
                   }
-                } else {
-                  navigate('/upload');
-                }
-              }}
-            >
-              📂 Upload Resume
-            </button>
-            <button
-              className="w-full flex items-center gap-4 bg-indigo-50 border border-indigo-200 p-5 rounded-2xl text-indigo-900 text-xl font-medium hover:bg-indigo-100 hover:scale-105 transition-transform duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              onClick={() => navigate('/form')}
-            >
-              ⌨ Enter Details
-            </button>
-            <button
-              className="w-full flex items-center gap-4 bg-indigo-50 border border-indigo-200 p-5 rounded-2xl text-indigo-900 text-xl font-medium hover:bg-indigo-100 hover:scale-105 transition-transform duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              onClick={() => {
-                const username = prompt('Enter your GitHub username:');
-                if (username) {
-                  connectGithub(username);
-                  toast.success('GitHub connected!');
-                }
-              }}
-            >
-              🐙 Link GitHub
-            </button>
-          </div>
-        </div>
-
-        {/* Publish Card */}
-        <div className="bg-white rounded-3xl p-10 shadow-xl hover:shadow-2xl transition-shadow duration-500 border border-orange-100 flex flex-col">
-          <h3 className="text-4xl font-extrabold text-orange-900 mb-6 flex items-center gap-3">
-            🚀 Publish
-          </h3>
-          <p className="text-lg text-orange-700 mb-8 font-light max-w-md">
-            Ready to go live?
-          </p>
-          <div className="space-y-6 flex-grow flex flex-col justify-center">
-            <button
-              className="w-full flex items-center gap-4 bg-gradient-to-r from-orange-400 to-red-500 text-white p-6 rounded-2xl text-2xl font-bold hover:from-orange-500 hover:to-red-600 hover:scale-105 transition-transform duration-300 shadow-lg focus:outline-none focus:ring-4 focus:ring-red-400"
-              onClick={() => {
-                if (!hasResume) {
-                  toast.error('Please upload your resume first.');
-                  navigate('/upload');
-                  return;
-                }
-                if (hasPortfolio) {
                   navigate('/templates');
-                } else {
-                  navigate('/upload');
-                }
-              }}
-            >
-              ▶ Generate Portfolio
-            </button>
-            <button
-              className="w-full flex items-center gap-4 bg-orange-50 border border-orange-200 p-6 rounded-2xl text-orange-900 text-2xl font-semibold hover:bg-orange-100 hover:scale-105 transition-transform duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400"
-              onClick={() => {
-                if (hasPortfolio && portfolioLink) {
-                  navigator.clipboard.writeText(portfolioLink);
-                  toast.success('Portfolio link copied to clipboard!');
-                } else {
-                  if (hasResume || (userDetails && Object.keys(userDetails).length > 0)) {
-                    if (window.confirm('Portfolio does not exist. Create Portfolio now?')) {
-                      navigate('/templates');
-                    }
-                  } else {
-                    navigate('/upload');
-                  }
-                }
-              }}
-            >
-              🔗 Copy share link
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Templates Section */}
-      <section className="max-w-7xl mx-auto mt-16 px-6 md:px-12">
-        <div className="bg-white rounded-3xl p-10 shadow-xl hover:shadow-2xl transition-shadow duration-500 border border-purple-100 max-w-4xl mx-auto">
-          <h3 className="text-4xl font-extrabold text-purple-900 mb-6 flex items-center gap-3 justify-center">
-            🎨 Templates
-          </h3>
-          <p className="text-lg text-purple-700 mb-8 font-light text-center max-w-xl mx-auto">
-            Choose a look that matches your style.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-8">
-            <button
-              className="flex-1 flex items-center justify-center gap-4 bg-purple-50 border border-purple-200 p-6 rounded-2xl text-purple-900 text-2xl font-semibold hover:bg-purple-100 hover:scale-105 transition-transform duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-purple-400"
-              onClick={() => navigate('/templates')}
-            >
-              📂 Explore templates
-            </button>
-            <button
-              className="flex-1 flex items-center justify-center gap-4 bg-purple-50 border border-purple-200 p-6 rounded-2xl text-purple-900 text-2xl font-semibold hover:bg-purple-100 hover:scale-105 transition-transform duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-purple-400"
-              onClick={() => {
-                if (hasPortfolio) {
-                  navigate('/deployment');
-                } else {
-                  toast.error('No portfolio to preview.');
-                }
-              }}
-            >
-              👁 Preview current
-            </button>
-          </div>
+                }}
+                className="px-8 py-4 bg-gradient-to-r from-green-500 to-teal-500 text-white font-bold rounded-lg shadow-lg hover:scale-105 transition-transform"
+              >
+                ✨ Generate Portfolio
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

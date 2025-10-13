@@ -17,7 +17,7 @@ import SignUpPage from './pages/SignUpPage'
 import Feedback from './pages/Feedback'
 import PortfolioSuccess from './pages/PortfolioSuccess'
 import ProtectedRoute from './components/ProtectedRoute'
-import { useAuth } from './components/AuthContext'
+
 import GlobalLoader from './components/GlobalLoader'
 
 const App = () => {
