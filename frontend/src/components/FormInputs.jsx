@@ -27,11 +27,25 @@ const FormInputs = ({ formData, setFormData }) => {
     setFormData({ ...formData, projects: newProjects });
   };
 
+  const handleDeleteProject = (index) => {
+    const newProjects = [...(formData.projects || [])];
+    newProjects.splice(index, 1);
+    setFormData({ ...formData, projects: newProjects });
+    toast.info("Project removed.");
+  };
+
   const handleExperienceChange = (index, e) => {
     const { name, value } = e.target;
     const newExperience = [...(formData.experience || [])];
     newExperience[index] = { ...newExperience[index], [name]: value };
     setFormData({ ...formData, experience: newExperience });
+  };
+
+  const handleDeleteExperience = (index) => {
+    const newExperience = [...(formData.experience || [])];
+    newExperience.splice(index, 1);
+    setFormData({ ...formData, experience: newExperience });
+    toast.info("Experience entry removed.");
   };
 
   const handleResponsibilitiesChange = (index, e) => {
@@ -377,39 +391,49 @@ const FormInputs = ({ formData, setFormData }) => {
         <h3 className="text-xl font-semibold mb-4">Projects</h3>
         {Array.isArray(formData.projects) &&
           formData.projects.map((project, index) => (
-            <div
-              key={index}
-              className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-4 border rounded"
-            >
-              <input
-                name="title"
-                value={project.title || ""}
-                onChange={(e) => handleProjectChange(index, e)}
-                placeholder={`Project ${index + 1} Title`}
-                className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
-              />
-              <input
-                name="description"
-                value={project.description || ""}
-                onChange={(e) => handleProjectChange(index, e)}
-                placeholder="Description"
-                className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
-              />
-              <input
-                name="technologies"
-                value={project.technologies || ""}
-                onChange={(e) => handleProjectChange(index, e)}
-                placeholder="Technologies"
-                className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
-              />
-              {globallyEnhancedData?.projects?.[index] && (
-                <div className="md:col-span-3 mt-2 p-3 border-l-4 border-purple-400 bg-purple-50 rounded-r-lg">
-                   <h4 className="font-semibold text-purple-800 text-sm">AI Suggestion for Project {index + 1}:</h4>
-                   <p className="text-sm text-gray-700 mt-1"><strong>Title:</strong> {globallyEnhancedData.projects[index].title}</p>
-                   <p className="text-sm text-gray-700 mt-1"><strong>Description:</strong> {globallyEnhancedData.projects[index].description}</p>
-                   <p className="text-sm text-gray-700 mt-1"><strong>Technologies:</strong> {globallyEnhancedData.projects[index].technologies}</p>
+            <div key={index} className="flex items-start gap-2 mb-4">
+              <div className="flex-grow p-4 border rounded">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <input
+                    name="title"
+                    value={project.title || ""}
+                    onChange={(e) => handleProjectChange(index, e)}
+                    placeholder={`Project ${index + 1} Title`}
+                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
+                  />
+                  <input
+                    name="description"
+                    value={project.description || ""}
+                    onChange={(e) => handleProjectChange(index, e)}
+                    placeholder="Description"
+                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
+                  />
+                  <input
+                    name="technologies"
+                    value={project.technologies || ""}
+                    onChange={(e) => handleProjectChange(index, e)}
+                    placeholder="Technologies"
+                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
+                  />
+                  {globallyEnhancedData?.projects?.[index] && (
+                    <div className="md:col-span-3 mt-2 p-3 border-l-4 border-purple-400 bg-purple-50 rounded-r-lg">
+                      <h4 className="font-semibold text-purple-800 text-sm">AI Suggestion for Project {index + 1}:</h4>
+                      <p className="text-sm text-gray-700 mt-1"><strong>Title:</strong> {globallyEnhancedData.projects[index].title}</p>
+                      <p className="text-sm text-gray-700 mt-1"><strong>Description:</strong> {globallyEnhancedData.projects[index].description}</p>
+                      <p className="text-sm text-gray-700 mt-1"><strong>Technologies:</strong> {globallyEnhancedData.projects[index].technologies}</p>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+              <button
+                onClick={() => handleDeleteProject(index)}
+                className="p-2 mt-4 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors h-10 w-10 flex items-center justify-center"
+                aria-label="Delete project"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
             </div>
           ))}
       </div>
@@ -419,34 +443,45 @@ const FormInputs = ({ formData, setFormData }) => {
         <h3 className="text-xl font-semibold mb-4">Experience</h3>
         {Array.isArray(formData.experience) &&
           formData.experience.map((exp, index) => (
-            <div key={index} className="mb-4 p-4 border rounded">
-              <input
-                name="jobTitle"
-                value={exp.jobTitle || ""}
-                onChange={(e) => handleExperienceChange(index, e)}
-                placeholder="Job Title"
-                className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
-              />
-              <input
-                name="company"
-                value={exp.company || ""}
-                onChange={(e) => handleExperienceChange(index, e)}
-                placeholder="Company"
-                className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
-              />
-              <input
-                name="duration"
-                value={exp.duration || ""}
-                onChange={(e) => handleExperienceChange(index, e)}
-                placeholder="Duration"
-                className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
-              />
-              <textarea
-                value={(exp.responsibilities || []).join("\n")}
-                onChange={(e) => handleResponsibilitiesChange(index, e)}
-                placeholder="Responsibilities (one per line)"
-                className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1 mt-2 h-24"
-              />
+            <div key={index} className="flex items-start gap-2 mb-4">
+              <div className="flex-grow p-4 border rounded">
+                <input
+                  name="jobTitle"
+                  value={exp.jobTitle || ""}
+                  onChange={(e) => handleExperienceChange(index, e)}
+                  placeholder="Job Title"
+                  className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-2"
+                />
+                <input
+                  name="company"
+                  value={exp.company || ""}
+                  onChange={(e) => handleExperienceChange(index, e)}
+                  placeholder="Company"
+                  className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-2"
+                />
+                <input
+                  name="duration"
+                  value={exp.duration || ""}
+                  onChange={(e) => handleExperienceChange(index, e)}
+                  placeholder="Duration"
+                  className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-2"
+                />
+                <textarea
+                  value={(exp.responsibilities || []).join("\n")}
+                  onChange={(e) => handleResponsibilitiesChange(index, e)}
+                  placeholder="Responsibilities (one per line)"
+                  className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 h-24"
+                />
+              </div>
+              <button
+                onClick={() => handleDeleteExperience(index)}
+                className="p-2 mt-4 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors h-10 w-10 flex items-center justify-center"
+                aria-label="Delete experience"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
             </div>
           ))}
       </div>
