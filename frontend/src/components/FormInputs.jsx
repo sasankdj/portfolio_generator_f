@@ -37,7 +37,7 @@ const FormInputs = ({ formData, setFormData }) => {
   const handleAddProject = () => {
     setFormData(prev => ({
       ...prev,
-      projects: [...(prev.projects || []), { title: '', description: '', technologies: '' }]
+      projects: [...(prev.projects || []), { title: '', description: '', technologies: '', link: '' }]
     }));
     toast.success("New project added.");
   };
@@ -447,6 +447,13 @@ const FormInputs = ({ formData, setFormData }) => {
                     onChange={(e) => handleProjectChange(index, e)}
                     placeholder="Technologies"
                     className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
+                  />
+                  <input
+                    name="link"
+                    value={project.link || ""}
+                    onChange={(e) => handleProjectChange(index, e)}
+                    placeholder="GitHub Link"
+                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1 md:col-span-3"
                   />
                   {globallyEnhancedData?.projects?.[index] && (
                     <div className="md:col-span-3 mt-2 p-3 border-l-4 border-purple-400 bg-purple-50 rounded-r-lg">

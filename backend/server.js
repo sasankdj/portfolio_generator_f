@@ -103,7 +103,7 @@ app.post('/api/auth/signup', async (req, res) => {
     const payload = { user: { id: user.id } };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' });
 
-    res.json({ token, id: user.id });
+    res.json({ token, id: user.id, name: user.name, email: user.email });
   } catch (err) {
     console.error('Signup Error:', err);
     res.status(500).json({ msg: 'Server error', error: err.message });
@@ -398,8 +398,8 @@ Extract the following fields from this resume text as JSON only (no explanations
   "github": "",
   "linkedin": "",
   "careerObjective": "",
-  "skills": "",
-  "projects": [{ "title": "", "description": "", "technologies": "" }],
+  "skills": [],
+  "projects": [{ "title": "", "description": "", "technologies": "", "link": "" }],
   "experience": [{ "jobTitle": "", "company": "", "duration": "", "responsibilities": [] }],
   "achievements": []
 }
@@ -491,14 +491,15 @@ const parseResumeText = (text) => {
       const projectBlocks = projectsStr.split(/\n\n/);
       response.projects = projectBlocks.map(block => {
           const lines = block.split('\n');
-          const title = lines[0].trim();
+          const title = lines[0]?.trim() || '';
           let description = '';
           let technologies = '';
+          let link = block.match(/https?:\/\/[^\s,]+/)?.[0] || '';
 
           for (let i = 1; i < lines.length; i++) {
               const line = lines[i];
               if (line.toLowerCase().includes('skills used:') || line.toLowerCase().includes('technologies:')) {
-                  technologies = line.split(':')[1].trim();
+                  technologies = line.split(':')[1]?.trim() || '';
               } else {
                   description += line + ' ';
               }
@@ -506,7 +507,7 @@ const parseResumeText = (text) => {
 
           return { title, description: description.trim(), technologies };
       });
-  }
+  } else { response.projects = []; }
 
   // Try to find experience
   const experienceMatch = text.match(/EXPERIENCE([\s\S]*?)PROJECTS/i);
@@ -533,7 +534,7 @@ const parseResumeText = (text) => {
                   responsibilities
               };
           }
-      }
+      } else { response.experience = []; }
   }
 
   // Try to find achievements

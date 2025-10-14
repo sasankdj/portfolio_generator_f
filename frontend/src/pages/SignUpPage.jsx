@@ -73,7 +73,7 @@ const SignUpPage = () => {
 
           const data = await response.json();
           if (response.ok) {
-            const userData = { name, email, token: data.token, id: data.id };
+            const userData = { name: data.name, email, token: data.token, id: data.id };
             login(userData);
             await fetchUserDetails(userData.token); // This will just initialize an empty state
             navigate("/home");

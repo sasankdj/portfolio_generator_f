@@ -21,7 +21,7 @@ export const PortfolioProvider = ({ children }) => {
     image: null,
     skills: '',
     careerObjective: '',
-    projects: [{ title: '', description: '' }, { title: '', description: '' }],
+    projects: [{ title: '', description: '', link: '' }, { title: '', description: '', link: '' }],
     experience: [{ company: '', jobTitle: '', duration: '', responsibilities: [] }],
     achievements: [{ quote: '' }]
   });
