@@ -239,6 +239,42 @@ app.post('/api/auth/github', async (req, res) => {
     res.status(500).send('Server error during GitHub authentication');
   }
 });
+
+// --- GitHub Repo Fetching Route ---
+app.get('/api/github/repos/:username', async (req, res) => {
+  const { username } = req.params;
+  if (!username) {
+    return res.status(400).json({ error: 'GitHub username is required.' });
+  }
+
+  try {
+    // Using a token is best practice to avoid rate limiting
+    const headers = { 'Accept': 'application/vnd.github.v3+json' };
+    if (process.env.GITHUB_TOKEN) {
+      headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+    }
+
+    const response = await fetch(`https://api.github.com/users/${username}/repos?sort=pushed&direction=desc&per_page=20`, { headers });
+
+    if (!response.ok) {
+      if (response.status === 404) return res.status(404).json({ error: 'GitHub user not found.' });
+      throw new Error(`GitHub API responded with status ${response.status}`);
+    }
+
+    const repos = await response.json();
+    const simplifiedRepos = repos.map(repo => ({
+      title: repo.name.replace(/[-_]/g, ' '),
+      description: repo.description || '',
+      link: repo.html_url,
+      technologies: repo.language || '',
+    }));
+    res.json(simplifiedRepos);
+  } catch (error) {
+    console.error('Error fetching GitHub repos:', error.message);
+    res.status(500).json({ error: 'Failed to fetch repositories from GitHub.' });
+  }
+});
+
 // --- Portfolio Data Routes ---
 app.get('/api/portfolio', protect, async (req, res) => {
   try {
@@ -356,6 +392,7 @@ Extract the following fields from this resume text as JSON only (no explanations
   "fullName": "",
   "headline": "",
   "email": "",
+  "github": "",
   "linkedin": "",
   "careerObjective": "",
   "skills": "",
@@ -424,6 +461,12 @@ const parseResumeText = (text) => {
   const linkedinMatch = text.match(/linkedin:(.*)/);
   if (linkedinMatch && linkedinMatch[1]) {
     response.linkedin = 'https://www.linkedin.com/in/' + linkedinMatch[1].trim();
+  }
+
+  // Try to find a GitHub URL
+  const githubMatch = text.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/[a-zA-Z0-9_-]+/i);
+  if (githubMatch) {
+    response.github = githubMatch[0].startsWith('http') ? githubMatch[0] : `https://${githubMatch[0]}`;
   }
 
   // Try to find a summary
@@ -532,6 +575,7 @@ app.post('/generate-portfolio', async (req, res) => {
     generatedHtml = generatedHtml.replace(/{{fullName}}/g, formData.fullName || '');
     generatedHtml = generatedHtml.replace(/{{headline}}/g, formData.headline || '');
     generatedHtml = generatedHtml.replace(/{{email}}/g, formData.email || '');
+    generatedHtml = generatedHtml.replace(/{{github}}/g, formData.github || '');
     generatedHtml = generatedHtml.replace(/{{careerObjective}}/g, formData.careerObjective || '');
     generatedHtml = generatedHtml.replace(/{{avatarUrl}}/g, formData.image || 'https://imgcdn.stablediffusionweb.com/2024/11/1/b51f49a9-82a1-4659-905d-c8cd8643bade.jpg');
 
@@ -679,6 +723,7 @@ app.post('/api/download-html', async (req, res) => {
     generatedHtml = generatedHtml.replace(/{{fullName}}/g, formData.fullName || '');
     generatedHtml = generatedHtml.replace(/{{headline}}/g, formData.headline || '');
     generatedHtml = generatedHtml.replace(/{{email}}/g, formData.email || '');
+    generatedHtml = generatedHtml.replace(/{{github}}/g, formData.github || '');
     generatedHtml = generatedHtml.replace(/{{careerObjective}}/g, formData.careerObjective || '');
 
     // Skills

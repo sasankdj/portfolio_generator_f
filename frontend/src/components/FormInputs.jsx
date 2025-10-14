@@ -5,8 +5,11 @@ import { usePortfolio } from "./PortfolioContext";
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const FormInputs = ({ formData, setFormData }) => {
+  const [fetchedRepos, setFetchedRepos] = useState([]);
+  const [isFetchingRepos, setIsFetchingRepos] = useState(false);
   const [isParsingResume, setIsParsingResume] = useState(false);
   const { setLoading: setGlobalLoading } = usePortfolio();
+  const reposContainerRef = useRef(null);
   const [enhancing, setEnhancing] = useState(false);
   const fileInputRef = useRef(null);
   const [globallyEnhancedData, setGloballyEnhancedData] = useState(null);
@@ -109,6 +112,56 @@ const FormInputs = ({ formData, setFormData }) => {
     if (file) await uploadResume(file);
   };
 
+  const handleFetchRepos = async () => {
+    const githubInput = formData.github;
+    if (!githubInput) {
+      toast.info("Please enter your GitHub username or profile URL first.");
+      return;
+    }
+
+    let username;
+    // Try to extract username from URL, otherwise assume the input is the username
+    const urlMatch = githubInput.match(/github\.com\/([a-zA-Z0-9_-]+)/);
+    if (urlMatch && urlMatch[1]) {
+      username = urlMatch[1];
+    } else if (!githubInput.includes('/') && !githubInput.includes('.')) {
+      username = githubInput;
+    } else {
+      toast.error("Invalid input. Please enter just your username or a full GitHub URL.");
+      return;
+    }
+
+    setIsFetchingRepos(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/github/repos/${username}`);
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || `Failed to fetch repos.`);
+      }
+      const repos = await response.json();
+      setFetchedRepos(repos);
+      toast.success(`Found ${repos.length} of your most recent public repositories!`);
+      // Scroll to the new section after it renders
+      setTimeout(() => {
+        reposContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    } catch (error) {
+      console.error("Error fetching repos:", error);
+      toast.error(error.message);
+    } finally {
+      setIsFetchingRepos(false);
+    }
+  };
+
+  const addRepoToProjects = (repo) => {
+    // Add repo to projects, avoiding duplicates
+    if (!formData.projects.some(p => p.title === repo.title)) {
+      setFormData(prev => ({ ...prev, projects: [...prev.projects, repo] }));
+      toast.info(`Added "${repo.title}" to your projects.`);
+    } else {
+      toast.warn(`Project "${repo.title}" is already in your list.`);
+    }
+  };
 
 
   // Enhance All with AI
@@ -206,6 +259,27 @@ const FormInputs = ({ formData, setFormData }) => {
             placeholder="LinkedIn URL"
             className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
           />
+          <div className="flex items-center gap-2">
+            <input
+              name="github"
+              value={formData.github}
+              onChange={handleInputChange}
+              placeholder="GitHub Username or URL eg:sasankdj"
+              className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+            />
+            <button
+              onClick={handleFetchRepos}
+              className="px-4 py-3 bg-gray-800 text-white rounded-lg hover:bg-black whitespace-nowrap"
+              disabled={isFetchingRepos || isParsingResume}
+            >
+              {isFetchingRepos ? (
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : "Fetch"}
+            </button>
+          </div>
           <input
             name="headline"
             value={formData.headline}
@@ -276,6 +350,27 @@ const FormInputs = ({ formData, setFormData }) => {
           className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
         />
       </div>
+
+      {/* Fetched GitHub Repos */}
+      {fetchedRepos.length > 0 && (
+        <div ref={reposContainerRef} className="p-6 border rounded-lg">
+          <h3 className="text-xl font-semibold mb-4">Your GitHub Repositories</h3>
+          <p className="text-sm text-gray-500 mb-4">Select repositories to add them to your projects list below.</p>
+          <div className="max-h-64 overflow-y-auto space-y-2 pr-2">
+            {fetchedRepos.map((repo, index) => (
+              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md border">
+                <div>
+                  <p className="font-semibold text-gray-800">{repo.title}</p>
+                  <p className="text-sm text-gray-600">{repo.description}</p>
+                </div>
+                <button onClick={() => addRepoToProjects(repo)} className="px-3 py-1 text-sm bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors">
+                  + Add
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Projects */}
       <div className="p-6 border rounded-lg">

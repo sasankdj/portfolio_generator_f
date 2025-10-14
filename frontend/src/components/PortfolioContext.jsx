@@ -17,6 +17,7 @@ export const PortfolioProvider = ({ children }) => {
     headline: '',
     email: '',
     linkedin: '',
+    github: '',
     image: null,
     skills: '',
     careerObjective: '',
