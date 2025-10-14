@@ -34,6 +34,14 @@ const FormInputs = ({ formData, setFormData }) => {
     toast.info("Project removed.");
   };
 
+  const handleAddProject = () => {
+    setFormData(prev => ({
+      ...prev,
+      projects: [...(prev.projects || []), { title: '', description: '', technologies: '' }]
+    }));
+    toast.success("New project added.");
+  };
+
   const handleExperienceChange = (index, e) => {
     const { name, value } = e.target;
     const newExperience = [...(formData.experience || [])];
@@ -48,6 +56,14 @@ const FormInputs = ({ formData, setFormData }) => {
     toast.info("Experience entry removed.");
   };
 
+  const handleAddExperience = () => {
+    setFormData(prev => ({
+      ...prev,
+      experience: [...(prev.experience || []), { jobTitle: '', company: '', duration: '', responsibilities: [] }]
+    }));
+    toast.success("New experience entry added.");
+  };
+
   const handleResponsibilitiesChange = (index, e) => {
     const newExperience = [...(formData.experience || [])];
     newExperience[index] = {
@@ -55,6 +71,21 @@ const FormInputs = ({ formData, setFormData }) => {
       responsibilities: e.target.value.split("\n"),
     };
     setFormData({ ...formData, experience: newExperience });
+  };
+
+  const handleAchievementChange = (index, e) => {
+    const { name, value } = e.target;
+    const newAchievements = [...(formData.achievements || [])].map((ach, i) => 
+      i === index ? { ...ach, [name]: value } : ach
+    );
+    newAchievements.splice(index, 1);
+    setFormData({ ...formData, achievements: newAchievements });
+    toast.info("Testimonial removed.");
+  };
+
+  const handleAddAchievement = () => {
+    setFormData(prev => ({ ...prev, achievements: [...(prev.achievements || []), { quote: '' }] }));
+    toast.success("New testimonial added.");
   };
 
   const handleImageChange = (e) => {
@@ -97,6 +128,7 @@ const FormInputs = ({ formData, setFormData }) => {
         headline: data.headline || prev.headline,
         email: data.email || prev.email,
         linkedin: data.linkedin || prev.linkedin,
+        github: data.github || prev.github, // Add this line to handle the github URL
         careerObjective: data.careerObjective || prev.careerObjective,
         skills: Array.isArray(data.skills)
           ? data.skills.join(", ")
@@ -105,9 +137,10 @@ const FormInputs = ({ formData, setFormData }) => {
         experience: Array.isArray(data.experience)
           ? data.experience
           : prev.experience,
-        achievements: Array.isArray(data.achievements)
-          ? data.achievements.join("\n")
-          : data.achievements || prev.achievements,
+        // Convert the array of strings for achievements into an array of objects
+        achievements: Array.isArray(data.achievements) && data.achievements.length > 0
+          ? data.achievements.map(quote => ({ quote }))
+          : prev.achievements,
       }));
     } catch (err) {
       console.error(err);
@@ -436,6 +469,15 @@ const FormInputs = ({ formData, setFormData }) => {
               </button>
             </div>
           ))}
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={handleAddProject}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            Add Project
+          </button>
+        </div>
       </div>
 
       {/* Experience */}
@@ -484,26 +526,52 @@ const FormInputs = ({ formData, setFormData }) => {
               </button>
             </div>
           ))}
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={handleAddExperience}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            Add Experience
+          </button>
+        </div>
       </div>
 
       {/* Achievements */}
       <div className="p-6 border rounded-lg">
         <h3 className="text-xl font-semibold mb-4">Achievements / Testimonials</h3>
-        <textarea
-          name="achievements"
-          value={formData.achievements}
-          onChange={handleInputChange}
-          placeholder="Achievements or Testimonials"
-          className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1 h-24"
-        />
-        {globallyEnhancedData?.achievements && (
-          <div className="mt-4 p-4 border-l-4 border-purple-400 bg-purple-50">
-            <h4 className="font-semibold text-purple-800">AI Suggestion for Achievements:</h4>
-            <pre className="text-gray-700 italic mt-1 whitespace-pre-wrap font-sans">
-              {globallyEnhancedData.achievements}
-            </pre>
-          </div>
-        )}
+        {Array.isArray(formData.achievements) &&
+          formData.achievements.map((achievement, index) => (
+            <div key={index} className="flex items-start gap-2 mb-4">
+              <div className="flex-grow">
+                <textarea
+                  name="quote"
+                  value={achievement.quote || ""}
+                  onChange={(e) => handleAchievementChange(index, e)}
+                  placeholder={`Testimonial / Achievement ${index + 1}`}
+                  className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1 h-24"
+                />
+              </div>
+              <button
+                onClick={() => handleDeleteAchievement(index)}
+                className="p-2 mt-4 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors h-10 w-10 flex items-center justify-center"
+                aria-label="Delete testimonial"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          ))}
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={handleAddAchievement}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            Add Testimonial
+          </button>
+        </div>
       </div>
 
     </div>

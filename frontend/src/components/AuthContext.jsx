@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
     return userData ? JSON.parse(userData) : null;
   });
 
-  const login = (userData = null) => {
+  const login = (userData) => {
     setIsLoggedIn(true);
     sessionStorage.setItem('isLoggedIn', 'true');
     if (userData) {
@@ -24,9 +24,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // Clear session storage first
+    sessionStorage.clear();
+    // Then update state
     setIsLoggedIn(false);
     setUser(null);
-    sessionStorage.clear();
   };
 
   return (

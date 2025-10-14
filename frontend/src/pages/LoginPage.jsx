@@ -91,24 +91,32 @@ const LoginPage = () => {
   };
 
   const handleGoogleSignIn = useGoogleLogin({
+    flow: 'auth-code', // Important: We want an authorization code to send to the backend
     onSuccess: async (tokenResponse) => {
+      setLoading(true);
+      setAuthError(null);
       try {
-        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        const response = await fetch(`${API_BASE_URL}/api/auth/google`, {
+          method: 'POST',
           headers: {
-            Authorization: `Bearer ${tokenResponse.access_token}`,
-
+            'Content-Type': 'application/json',
           },
-        }).then(r => r.json());
-        const userInfo = await userInfoRes.json();
-        // Note: Google Sign-In here won't have our app's token/id for backend data.
-        // This flow would need adjustment if Google-signed-in users need to save data to your DB.
-        // For now, it logs them in on the client-side.
-        login({ name: userInfo.name, email: userInfo.email, id: userInfo.sub }); // Use Google's `sub` as a unique ID
+          body: JSON.stringify({ code: tokenResponse.code }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+          const userData = { name: data.name, email: data.email, token: data.token, id: data.id };
+          login(userData);
+          await fetchUserDetails(userData.token);
+          navigate('/home');
+        } else {
+          setAuthError(data.msg || 'Google Sign-In failed.');
+        }
       } catch (error) {
-        console.error("Failed to fetch user info from Google", error);
-        login({ name: 'User' });
+        console.error("Google Sign-In failed", error);
+        setAuthError("An unexpected error occurred during Google Sign-In.");
       }
-      navigate('/home');
+      setLoading(false);
     },
     onError: () => toast.error('Google sign-in failed. Please try again.'),
   });

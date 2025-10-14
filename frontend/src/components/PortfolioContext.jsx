@@ -22,8 +22,8 @@ export const PortfolioProvider = ({ children }) => {
     skills: '',
     careerObjective: '',
     projects: [{ title: '', description: '' }, { title: '', description: '' }],
-    experience: { company: '', jobTitle: '', duration: '', responsibilities: '' },
-    achievements: ''
+    experience: [{ company: '', jobTitle: '', duration: '', responsibilities: [] }],
+    achievements: [{ quote: '' }]
   });
 
   const [resume, setResume] = useState(null);
@@ -75,21 +75,21 @@ export const PortfolioProvider = ({ children }) => {
   };
 
   const saveUserDetails = async (detailsToSave) => {
-    const token = user?.token;
+    const token = user?.token; // The token is directly on the user object
     if (!token) {
       toast.warn('You must be logged in to save your details.');
       return;
     }
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/portfolio`, {
+      const response = await fetch(`${API_BASE_URL}/api/portfolio`, { // Corrected endpoint
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
         // The backend can get the userId from the token, but sending it is also fine.
-        body: JSON.stringify({ userId: user.id, ...detailsToSave }),
+        body: JSON.stringify(detailsToSave), // The backend gets the user from the token, no need to send userId
       });
 
       if (!response.ok) {

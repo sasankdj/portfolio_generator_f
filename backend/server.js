@@ -29,7 +29,7 @@ const port = process.env.PORT || 3001; // Use environment variable for port
 // Increase the server timeout to 5 minutes (300,000 ms) to handle long AI requests
 app.timeout = 300000;
 
-const oAuth2Client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, 'postmessage');
+const oAuth2Client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET);
 
 // --- Database Connection ---
 mongoose.connect(process.env.MONGO_URI)
@@ -139,7 +139,10 @@ app.post('/api/auth/google', async (req, res) => {
   const { code } = req.body;
   try {
     // Exchange authorization code for tokens
-    const { tokens } = await oAuth2Client.getToken(code);
+    const { tokens } = await oAuth2Client.getToken({
+      code,
+      redirect_uri: 'postmessage'
+    });
     const idToken = tokens.id_token;
 
     if (!idToken) {
@@ -170,7 +173,7 @@ app.post('/api/auth/google', async (req, res) => {
     // Create and return JWT
     const jwtPayload = { user: { id: user.id } };
     const token = jwt.sign(jwtPayload, process.env.JWT_SECRET, { expiresIn: '5h' });
-    res.json({ token, id: user.id });
+    res.json({ token, id: user.id, name: user.name, email: user.email });
   } catch (err) {
     console.error('Google auth error:', err.message);
     res.status(500).send('Server error during Google authentication');
@@ -291,8 +294,8 @@ app.get('/api/portfolio', protect, async (req, res) => {
 
 app.post('/api/portfolio', protect, async (req, res) => {
   // The entire request body is the form data, excluding the userId which we get from the token.
-  const { userId, ...formData } = req.body;
-  const portfolioData = { user: req.user.id, data: formData };
+  const formData = req.body;
+  const portfolioData = { user: req.user.id, data: formData }; // Use the authenticated user's ID
   const portfolio = await Portfolio.findOneAndUpdate({ user: req.user.id }, portfolioData, { new: true, upsert: true });
   
   res.json(portfolio);
@@ -464,13 +467,13 @@ const parseResumeText = (text) => {
   }
 
   // Try to find a GitHub URL
-  const githubMatch = text.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/[a-zA-Z0-9_-]+/i);
+  const githubMatch = text.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/[a-zA-Z0-9_-]+/i) || text.match(/github:(.*)/);
   if (githubMatch) {
-    response.github = githubMatch[0].startsWith('http') ? githubMatch[0] : `https://${githubMatch[0]}`;
+    response.github = githubMatch[1] ? githubMatch[1].trim() : (githubMatch[0].startsWith('http') ? githubMatch[0] : `https://${githubMatch[0]}`);
   }
 
   // Try to find a summary
-  const careerObjectiveMatch = text.match(/(PROFILE|Summary|Career Objective)\n([\s\S]*?)(?=\n\n|EDUCATION)/i);
+  const careerObjectiveMatch = text.match(/(?:PROFILE|SUMMARY|CAREER OBJECTIVE)\s*\n([\s\S]*?)(?=\n\n[A-Z\s]+$|\n\n[A-Z])/im);
   if (careerObjectiveMatch && careerObjectiveMatch[2]) {
     response.careerObjective = careerObjectiveMatch[2].trim();
   }
@@ -536,7 +539,7 @@ const parseResumeText = (text) => {
   // Try to find achievements
   const achievementsMatch = text.match(/ACHIEVEMENTS\n([\s\S]*)/i);
   if (achievementsMatch && achievementsMatch[1]) {
-    response.achievements = achievementsMatch[1].trim();
+    response.achievements = achievementsMatch[1].trim().split('\n').filter(Boolean);
   }
 
   return response;
@@ -668,20 +671,20 @@ app.post('/generate-portfolio', async (req, res) => {
 
     // Achievements
      if (formData.achievements) {
-        let achievementsHtml = '';
-        if (template === 'classic') {
-          achievementsHtml = formData.achievements.split('\n').filter(Boolean).map(achievement => `
+        let achievementsHtml = formData.achievements.filter(a => a.quote).map(achievement => {
+          if (template === 'classic') {
+            return `
           <div class="testimonial-card bg-gray-50 p-8 rounded-lg shadow-sm">
-              <p class="text-gray-700 italic">"${achievement}"</p>
-          </div>
-          `).join('\n');
-        } else if (template === 'dark') {
-          achievementsHtml = formData.achievements.split('\n').filter(Boolean).map(achievement => `
+              <p class="text-gray-700 italic">"${achievement.quote}"</p>
+          </div>`;
+          } else if (template === 'dark') {
+            return `
           <div class="testimonial-card bg-gray-700 p-8 rounded-lg border border-gray-600 hover:border-green-600 hover:border-opacity-50 transition duration-300">
-            <p class="text-gray-300 italic">"${achievement}"</p>
-          </div>
-          `).join('\n');
-        }
+            <p class="text-gray-300 italic">"${achievement.quote}"</p>
+          </div>`;
+          }
+          return ''; // Return empty string for other templates or if no quote
+        }).join('\n');
         generatedHtml = generatedHtml.replace('<!-- TESTIMONIALS -->', achievementsHtml);
     }
     // --- Return HTML directly in JSON ---
