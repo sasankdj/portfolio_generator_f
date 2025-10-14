@@ -352,6 +352,50 @@ const FormInputs = ({ formData, setFormData }) => {
         </div>
       </div>
 
+      {/* GitHub & Repositories */}
+      <div className="p-6 border rounded-lg">
+        <h3 className="text-xl font-semibold mb-4">GitHub & Repositories</h3>
+        <div className="flex items-center gap-2 mb-4">
+          <input
+            name="github"
+            value={formData.github}
+            onChange={handleInputChange}
+            placeholder="GitHub Username or URL eg:sasankdj"
+            className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+          />
+          <button
+            onClick={handleFetchRepos}
+            className="px-4 py-3 bg-gray-800 text-white rounded-lg hover:bg-black whitespace-nowrap"
+            disabled={isFetchingRepos || isParsingResume}
+          >
+            {isFetchingRepos ? (
+              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : "Fetch Repos"}
+          </button>
+        </div>
+        {fetchedRepos.length > 0 && (
+          <div ref={reposContainerRef}>
+            <p className="text-sm text-gray-500 mb-4">Select repositories to add them to your projects list below.</p>
+            <div className="max-h-64 overflow-y-auto space-y-2 pr-2">
+              {fetchedRepos.map((repo, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md border">
+                  <div>
+                    <p className="font-semibold text-gray-800">{repo.title}</p>
+                    <p className="text-sm text-gray-600">{repo.description}</p>
+                  </div>
+                  <button onClick={() => addRepoToProjects(repo)} className="px-3 py-1 text-sm bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors">
+                    + Add
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Professional Summary */}
       <div className="p-6 border rounded-lg">
         <h3 className="text-xl font-semibold mb-4">Professional Summary</h3>
@@ -397,27 +441,6 @@ const FormInputs = ({ formData, setFormData }) => {
           className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
         />
       </div>
-
-      {/* Fetched GitHub Repos */}
-      {fetchedRepos.length > 0 && (
-        <div ref={reposContainerRef} className="p-6 border rounded-lg">
-          <h3 className="text-xl font-semibold mb-4">Your GitHub Repositories</h3>
-          <p className="text-sm text-gray-500 mb-4">Select repositories to add them to your projects list below.</p>
-          <div className="max-h-64 overflow-y-auto space-y-2 pr-2">
-            {fetchedRepos.map((repo, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md border">
-                <div>
-                  <p className="font-semibold text-gray-800">{repo.title}</p>
-                  <p className="text-sm text-gray-600">{repo.description}</p>
-                </div>
-                <button onClick={() => addRepoToProjects(repo)} className="px-3 py-1 text-sm bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors">
-                  + Add
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Projects */}
       <div className="p-6 border rounded-lg">
