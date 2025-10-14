@@ -78,6 +78,11 @@ const FormInputs = ({ formData, setFormData }) => {
     const newAchievements = [...(formData.achievements || [])].map((ach, i) => 
       i === index ? { ...ach, [name]: value } : ach
     );
+    setFormData({ ...formData, achievements: newAchievements });
+  };
+
+  const handleDeleteAchievement = (index) => {
+    const newAchievements = [...(formData.achievements || [])];
     newAchievements.splice(index, 1);
     setFormData({ ...formData, achievements: newAchievements });
     toast.info("Testimonial removed.");
