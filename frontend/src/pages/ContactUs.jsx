@@ -89,7 +89,7 @@ export default function ContactUs() {
                         <div>
                           <h3 className="font-semibold text-gray-800 mb-1">Email</h3>
                           <a href="mailto:support@example.com" className="text-green-600 hover:text-green-700 transition-colors">
-                            support@example.com
+                            support@portfolio.com
                           </a>
                         </div>
                       </div>
@@ -115,7 +115,7 @@ export default function ContactUs() {
                         </div>
                         <div>
                           <h3 className="font-semibold text-gray-800 mb-1">Location</h3>
-                          <p className="text-gray-600">123 Innovation Drive<br />San Francisco, CA 94105</p>
+                          <p className="text-gray-600">NA<br />NA</p>
                         </div>
                       </div>
                     </div>
@@ -270,7 +270,7 @@ export default function ContactUs() {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <a
-                      href="tel:+1234567890"
+                      href="tel:+918919636850"
                       className="bg-white text-green-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                     >
                       📞 Call Now

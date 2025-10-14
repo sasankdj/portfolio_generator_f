@@ -32,34 +32,44 @@ export default function Home() {
         <div className="lg:col-span-2 bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-shadow duration-500 border border-gray-100">
           <h3 className="text-3xl font-bold text-gray-800 mb-6">Get Started</h3>
           <div className="space-y-4">
-            <div className={`flex items-center p-4 rounded-xl transition-all duration-300 ${hasResume ? 'bg-green-50 border-green-200' : 'bg-indigo-50 border-indigo-200'} border`}>
-              <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-4 ${hasResume ? 'bg-green-500' : 'bg-indigo-500'}`}>
-                <span className="text-white font-bold text-lg">1</span>
+            {/* Option 1: Upload Resume */}
+            <div className="flex items-center p-4 rounded-xl transition-all duration-300 bg-indigo-50 border-indigo-200 border">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-4 bg-indigo-500 text-white font-bold text-lg">
+                AI
               </div>
               <div>
-                <h4 className={`text-lg font-semibold ${hasResume ? 'text-green-900' : 'text-indigo-900'}`}>
-                  {hasResume ? 'Resume Uploaded' : 'Upload Your Resume'}
-                </h4>
-                <p className={`text-sm ${hasResume ? 'text-green-700' : 'text-indigo-700'}`}>
-                  {hasResume ? 'Your resume has been parsed. You can re-upload if needed.' : 'Let AI extract your details to get started quickly.'}
-                </p>
+                <h4 className="text-lg font-semibold text-indigo-900">Dont have a resume?</h4>
+                <p className="text-sm text-indigo-700">Fill the details manualy to get you started quickly.</p>
               </div>
               <button
-                onClick={() => {
-                  if (hasResume) {
-                    if (confirm('Resume already exists. Do you want to re-upload?')) navigate('/upload');
-                  } else {
-                    navigate('/upload');
-                  }
-                }}
+                onClick={() => navigate('/form')}
                 className="ml-auto px-4 py-2 bg-white rounded-lg font-semibold text-indigo-600 shadow-sm hover:bg-indigo-50 transition-colors text-sm"
               >
-                {hasResume ? 'Re-upload' : 'Upload'}
+                Fill details
               </button>
             </div>
+            {/**/ }
+             <div className="flex items-center p-4 rounded-xl transition-all duration-300 bg-indigo-50 border-indigo-200 border">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-4 bg-indigo-400 text-white font-bold text-lg">
+                M
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-indigo-900">Have a resume?</h4>
+                <p className="text-sm text-indigo-700">Let our AI extract the details to get you started quickly.</p>
+              </div>
+              <button
+                onClick={() => navigate('/form')}
+                className="ml-auto px-4 py-2 bg-white rounded-lg font-semibold text-indigo-600 shadow-sm hover:bg-indigo-50 transition-colors text-sm"
+              >
+                Upload Resume
+              </button>
+            </div>
+            {/* Option 2: Fill Manually */}
             <div className="flex items-center p-4 rounded-xl bg-gray-50 border-gray-200 border">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-4 bg-gray-400">
-                <span className="text-white font-bold text-lg">2</span>
+              <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-4 bg-gray-500 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z" />
+                </svg>
               </div>
               <div>
                 <h4 className="text-lg font-semibold text-gray-800">Review & Refine Details</h4>

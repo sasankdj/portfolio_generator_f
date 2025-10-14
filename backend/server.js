@@ -72,7 +72,7 @@ const protect = async (req, res, next) => {
 };
 // Middleware
 app.use(cors()); // Allow requests from your frontend
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use('/generated', express.static(path.join(__dirname, 'generated')));
 
 // Set up multer for in-memory file storage
@@ -243,7 +243,7 @@ app.post('/api/auth/github', async (req, res) => {
 app.get('/api/portfolio', protect, async (req, res) => {
   try {
     const portfolio = await Portfolio.findOne({ user: req.user.id });
-    if (!portfolio) {
+    if (!portfolio || !portfolio.data) {
       return res.status(404).json({ msg: 'Portfolio not found for this user.' });
     }
     res.json(portfolio.data);
@@ -503,14 +503,14 @@ const parseResumeText = (text) => {
 
 
 app.post('/generate-portfolio', async (req, res) => {
-  const { formData, template, image } = req.body;
+  const { formData, template } = req.body;
 
   if (!formData || !template) {
     return res.status(400).json({ error: 'Missing formData or template' });
   }
 
   const templateMap = {
-    classic: 'ClassicTheme',
+    classic: 'ClassicTheme', 
     dark: 'DarkTheme',
     minimal: 'MinimalistTheme',
     creative: 'CreativeTheme',
@@ -533,7 +533,7 @@ app.post('/generate-portfolio', async (req, res) => {
     generatedHtml = generatedHtml.replace(/{{headline}}/g, formData.headline || '');
     generatedHtml = generatedHtml.replace(/{{email}}/g, formData.email || '');
     generatedHtml = generatedHtml.replace(/{{careerObjective}}/g, formData.careerObjective || '');
-    generatedHtml = generatedHtml.replace(/{{avatarUrl}}/g, image || 'https://imgcdn.stablediffusionweb.com/2024/11/1/b51f49a9-82a1-4659-905d-c8cd8643bade.jpg');
+    generatedHtml = generatedHtml.replace(/{{avatarUrl}}/g, formData.image || 'https://imgcdn.stablediffusionweb.com/2024/11/1/b51f49a9-82a1-4659-905d-c8cd8643bade.jpg');
 
     // Skills
     if (formData.skills) {

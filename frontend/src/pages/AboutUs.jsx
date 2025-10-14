@@ -84,21 +84,7 @@ export default function AboutUs() {
                     </div>
                   </div>
 
-                  {/* Stats */}
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center p-4 bg-white/60 rounded-xl border border-indigo-100">
-                      <div className="text-2xl md:text-3xl font-bold text-indigo-600">2025</div>
-                      <div className="text-sm text-gray-600">Founded</div>
-                    </div>
-                    <div className="text-center p-4 bg-white/60 rounded-xl border border-purple-100">
-                      <div className="text-2xl md:text-3xl font-bold text-purple-600">10K+</div>
-                      <div className="text-sm text-gray-600">Creators</div>
-                    </div>
-                    <div className="text-center p-4 bg-white/60 rounded-xl border border-indigo-100">
-                      <div className="text-2xl md:text-3xl font-bold text-indigo-600">50+</div>
-                      <div className="text-sm text-gray-600">Countries</div>
-                    </div>
-                  </div>
+                  
                 </div>
               </div>
 

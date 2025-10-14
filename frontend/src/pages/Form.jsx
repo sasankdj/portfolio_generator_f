@@ -14,10 +14,12 @@ function Form() {
   const selectedTemplateId = state?.selectedTemplate || 'classic';
 
   const [formData, setFormData] = useState(userDetails);
-  const [image, setImage] = useState(null); // Assuming you handle image uploads
 
   useEffect(() => {
-    setFormData(userDetails);
+    setFormData(prevFormData => ({
+      ...userDetails,
+      image: userDetails.image || prevFormData.image,
+    }));
   }, [userDetails]);
 
   const handleSubmit = async (e) => {
@@ -37,7 +39,6 @@ function Form() {
         },
         body: JSON.stringify({
           formData,
-          image,
           template: selectedTemplateId,
         }),
       });
@@ -67,7 +68,6 @@ function Form() {
         },
         body: JSON.stringify({
           formData,
-          image,
           template: selectedTemplateId,
         }),
       });
@@ -98,7 +98,6 @@ function Form() {
       },
       body: JSON.stringify({
         formData,
-        image,
         template: selectedTemplateId,
       }),
     });
@@ -144,12 +143,12 @@ function Form() {
         </div>
         <div className="bg-white p-8 rounded-xl shadow-lg relative">
           <h1 className="text-3xl font-bold text-gray-800 mb-6">Portfolio Details</h1>
-          <FormInputs formData={formData} setFormData={setFormData} image={image} setImage={setImage} uploadResume={uploadResume} loading={loading} />
+          <FormInputs formData={formData} setFormData={setFormData} uploadResume={uploadResume} loading={loading} />
         </div>
 
         <div className="mt-8 p-6 bg-white rounded-xl shadow-lg">
           <h2 className="text-2xl font-bold text-center mb-6">Actions</h2>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-wrap gap-4 justify-center">
             <button
               className="flex-1 flex items-center justify-center px-4 py-3 text-white bg-gray-700 rounded-lg hover:bg-gray-800 transition"
               onClick={handleSubmit}
@@ -173,6 +172,12 @@ function Form() {
               onClick={createAndNavigate}
             >
               ✨ Create Portfolio
+            </button>
+            <button
+              className="flex-1 flex items-center justify-center px-4 py-3 text-white bg-purple-500 rounded-lg hover:bg-purple-600 transition"
+              onClick={() => navigate('/templates')}
+            >
+              🎨 Change Template
             </button>
           </div>
         </div>

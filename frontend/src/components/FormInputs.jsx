@@ -4,7 +4,7 @@ import { usePortfolio } from "./PortfolioContext";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-const FormInputs = ({ formData, setFormData, image, setImage }) => {
+const FormInputs = ({ formData, setFormData }) => {
   const [isParsingResume, setIsParsingResume] = useState(false);
   const { setLoading: setGlobalLoading } = usePortfolio();
   const [enhancing, setEnhancing] = useState(false);
@@ -43,7 +43,7 @@ const FormInputs = ({ formData, setFormData, image, setImage }) => {
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       const reader = new FileReader();
-      reader.onload = (event) => setImage(event.target.result);
+      reader.onload = (event) => setFormData({ ...formData, image: event.target.result });
       reader.readAsDataURL(e.target.files[0]);
     }
   };
@@ -221,9 +221,9 @@ const FormInputs = ({ formData, setFormData, image, setImage }) => {
             accept="image/*"
             className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
           />
-          {image && (
+          {formData.image && (
             <img
-              src={image}
+              src={formData.image}
               alt="Preview"
               className="mt-4 w-32 h-32 rounded-full object-cover"
             />
@@ -376,21 +376,6 @@ const FormInputs = ({ formData, setFormData, image, setImage }) => {
         )}
       </div>
 
-      <style jsx>{`
-        .input {
-          width: 100%;
-          padding: 0.75rem;
-          border: 1px solid #d1d5db;
-          border-radius: 0.5rem;
-          transition: border-color 0.2s;
-          margin-bottom: 0.25rem;
-        }
-        .input:focus {
-          outline: none;
-          border-color: #4f46e5;
-          box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3);
-        }
-      `}</style>
     </div>
   );
 };
