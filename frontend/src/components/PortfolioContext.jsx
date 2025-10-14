@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
 import { toast } from 'react-toastify';
+import JSZip from 'jszip';
 import { useAuth } from './AuthContext';
 
 const PortfolioContext = createContext();
@@ -155,7 +156,7 @@ export const PortfolioProvider = ({ children }) => {
     setNetlifyUsername(username);
   };
 
-  const downloadPortfolioHtml = async (template) => {
+  const downloadPortfolioHtml = async (template, details) => {
     if (!template) {
       toast.error("Please select a template first.");
       return;
@@ -163,22 +164,31 @@ export const PortfolioProvider = ({ children }) => {
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/download-html`, {
+      const response = await fetch(`${API_BASE_URL}/generate-portfolio`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formData: userDetails, template }),
+        body: JSON.stringify({ formData: details, template }),
       });
 
       if (!response.ok) throw new Error('Failed to generate HTML.');
 
-      const htmlBlob = await response.blob();
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(htmlBlob);
-      link.download = 'portfolio.html';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success("Portfolio HTML downloaded!");
+      const data = await response.json();
+      if (!data.html) {
+        throw new Error('No HTML returned from server');
+      }
+
+      const zip = new JSZip();
+      zip.file('index.html', data.html);
+
+      zip.generateAsync({ type: 'blob' }).then(function (content) {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(content);
+        a.download = 'portfolio.zip';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        toast.success("Portfolio downloaded successfully!");
+      });
     } catch (error) {
       console.error('Error downloading portfolio:', error);
       toast.error(error.message || 'Could not download portfolio.');

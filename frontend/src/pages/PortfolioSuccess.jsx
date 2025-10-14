@@ -8,7 +8,7 @@ import { Eye, Download, UploadCloud, Edit } from 'lucide-react';
 const PortfolioSuccess = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { downloadPortfolioHtml } = usePortfolio();
+  const { userDetails, downloadPortfolioHtml } = usePortfolio();
   const { portfolioUrl, template } = location.state || {};
   
   useEffect(() => {
@@ -63,7 +63,7 @@ const PortfolioSuccess = () => {
             <Eye size={20} /> View Portfolio
           </a>
           <button
-            onClick={() => downloadPortfolioHtml(template)}
+            onClick={() => downloadPortfolioHtml(template, userDetails)}
             className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-500 text-white rounded-lg font-semibold hover:bg-indigo-600 transition-colors"
           >
             <Download size={20} /> Download

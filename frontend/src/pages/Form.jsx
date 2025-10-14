@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { usePortfolio } from "../components/PortfolioContext";
 import FormInputs from "../components/FormInputs";
+import JSZip from 'jszip';
 import Footer from "../components/Footer";
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -112,15 +113,18 @@ function Form() {
       throw new Error('No HTML returned from server');
     }
 
-    // Convert returned HTML string to a Blob
-    const blob = new Blob([data.html], { type: 'text/html' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'portfolio.html';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(a.href);
+    // Create a zip file containing index.html
+    const zip = new JSZip();
+    zip.file('index.html', data.html);
+
+    zip.generateAsync({ type: 'blob' }).then(function (content) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(content);
+      a.download = 'portfolio.zip';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
 
     toast.success('Portfolio downloaded successfully!');
   } catch (error) {
