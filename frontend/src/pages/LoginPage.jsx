@@ -4,12 +4,15 @@ import { useAuth } from "../components/AuthContext";
 import { useGoogleLogin } from "@react-oauth/google";
 import { usePortfolio } from "../components/PortfolioContext";
 import { toast } from "react-toastify";
+import { Eye, EyeOff } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
+const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState(null);
   const { login, isLoggedIn } = useAuth();
@@ -21,6 +24,38 @@ const LoginPage = () => {
       navigate('/home');
     }
   }, [isLoggedIn, navigate]);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+
+    if (code) {
+      setLoading(true);
+      fetch(`${API_BASE_URL}/api/auth/github`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.token) {
+          const userData = { name: data.name, email: data.email, token: data.token, id: data.id };
+          login(userData);
+          fetchUserDetails(userData.token);
+          navigate('/home', { replace: true });
+        } else {
+          throw new Error(data.msg || 'GitHub login failed.');
+        }
+      })
+      .catch(error => {
+        console.error('GitHub auth error:', error);
+        setAuthError(error.message);
+        setLoading(false);
+      });
+    }
+  }, [navigate, login, fetchUserDetails]);
 
   const handleSubmit = async (e) => {
      e.preventDefault();
@@ -44,8 +79,7 @@ const LoginPage = () => {
         await fetchUserDetails(userData.token);
         navigate('/home');
       } else {
-        // Specific error message from the backend
-        setAuthError(data.msg || "Login failed. Please check your credentials.");
+        setAuthError(data.msg || 'Login failed. Please check your credentials.');
       }
     } catch (error) {
       // Handle network errors or other unexpected errors
@@ -78,6 +112,11 @@ const LoginPage = () => {
     },
     onError: () => toast.error('Google sign-in failed. Please try again.'),
   });
+
+  const handleGitHubSignIn = () => {
+    const redirectUri = window.location.origin + window.location.pathname;
+    window.location.assign(`https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&scope=user:email&redirect_uri=${redirectUri}`);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-300 to-purple-300 p-4">
@@ -121,15 +160,24 @@ const LoginPage = () => {
             >
               Password
             </label>
-            <input
-              type="password"
-              id="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="mt-1 block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm bg-white/50 placeholder:text-gray-500/90 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="mt-1 block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm bg-white/50 placeholder:text-gray-500/90 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
 
           {authError && (
@@ -153,7 +201,7 @@ const LoginPage = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4">
-          {["Google", "LinkedIn", "GitHub"].map((provider) => {
+          {["Google", "GitHub"].map((provider) => {
             if (provider === "Google") {
               return (
                 <button
@@ -169,11 +217,7 @@ const LoginPage = () => {
             return (
               <button
                 key={provider}
-                onClick={() => {
-                  // Simulate OAuth login
-                  login();
-                  navigate('/home');
-                }}
+                onClick={handleGitHubSignIn}
                 className="flex-1 flex items-center justify-center py-2.5 border border-gray-300 bg-white rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <span className="font-medium text-black">{provider}</span>

@@ -116,12 +116,12 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ msg: 'Invalid credentials' });
+      return res.status(404).json({ msg: 'User not found. Please sign up before logging in.' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ msg: 'Invalid credentials' });
+      return res.status(400).json({ msg: 'Invalid credentials. Please try again.' });
     }
 
     const payload = { user: { id: user.id } };
@@ -177,6 +177,68 @@ app.post('/api/auth/google', async (req, res) => {
   }
 });
 
+app.post('/api/auth/github', async (req, res) => {
+  const { code } = req.body;
+
+  if (!code) {
+    return res.status(400).json({ msg: 'GitHub authorization code not provided.' });
+  }
+
+  try {
+    // 1. Exchange code for an access token
+    const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: process.env.GITHUB_CLIENT_ID,
+        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        code,
+      }),
+    });
+
+    const tokenData = await tokenResponse.json();
+    if (tokenData.error || !tokenData.access_token) {
+      throw new Error(tokenData.error_description || 'Failed to get GitHub access token.');
+    }
+
+    // 2. Use access token to get user info
+    const userResponse = await fetch('https://api.github.com/user', {
+      headers: {
+        Authorization: `Bearer ${tokenData.access_token}`,
+      },
+    });
+
+    const githubUser = await userResponse.json();
+    const { name, email, id: githubId, login: githubLogin } = githubUser;
+
+    // Use email if available, otherwise construct one from login
+    const userEmail = email || `${githubLogin}@users.noreply.github.com`;
+
+    // 3. Find or create user in your database
+    let user = await User.findOne({ email: userEmail });
+    if (!user) {
+      // Create a new user if they don't exist
+      user = new User({
+        name: name || githubLogin,
+        email: userEmail,
+        githubId,
+        password: `github_${githubId}`, // Create a dummy password
+      });
+      await user.save();
+    }
+
+    // 4. Create and return JWT
+    const jwtPayload = { user: { id: user.id } };
+    const token = jwt.sign(jwtPayload, process.env.JWT_SECRET, { expiresIn: '5h' });
+    res.json({ token, id: user.id, name: user.name, email: user.email });
+  } catch (err) {
+    console.error('GitHub auth error:', err.message);
+    res.status(500).send('Server error during GitHub authentication');
+  }
+});
 // --- Portfolio Data Routes ---
 app.get('/api/portfolio', protect, async (req, res) => {
   try {

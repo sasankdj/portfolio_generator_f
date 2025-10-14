@@ -17,7 +17,7 @@ import SignUpPage from './pages/SignUpPage'
 import Feedback from './pages/Feedback'
 import PortfolioSuccess from './pages/PortfolioSuccess'
 import ProtectedRoute from './components/ProtectedRoute'
-
+import { Analytics } from '@vercel/analytics/react';
 import GlobalLoader from './components/GlobalLoader'
 
 const App = () => {
@@ -45,6 +45,7 @@ const App = () => {
           <Route path="/feedback" element={<Feedback />} />
         </Route>
       </Routes>
+        <Analytics />
     </Router>
   )
 }

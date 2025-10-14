@@ -4,15 +4,19 @@ import { useAuth } from "../components/AuthContext";
 import { useGoogleLogin } from "@react-oauth/google";
 import { usePortfolio } from "../components/PortfolioContext";
 import { toast } from "react-toastify";
+import { Eye, EyeOff } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
+const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
 
 const SignUpPage = () => {
   // Add state for the new 'name' field
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -74,7 +78,11 @@ const SignUpPage = () => {
             await fetchUserDetails(userData.token); // This will just initialize an empty state
             navigate("/home");
           } else {
-            setErrors({ general: data.msg || "Sign up failed. Please try again." });
+            if (response.status === 400 && data.msg === 'User already exists') {
+              setErrors({ general: 'User with this email already exists. Please login.' });
+            } else {
+              setErrors({ general: data.msg || "Sign up failed. Please try again." });
+            }
           }
       } catch (error) {
         console.error("Sign up failed", error);
@@ -106,6 +114,11 @@ const SignUpPage = () => {
     },
     onError: () => toast.error('Google sign-in failed. Please try again.'),
   });
+
+  const handleGitHubSignIn = () => {
+    const redirectUri = window.location.origin + '/login'; // Always redirect to login for callback handling
+    window.location.assign(`https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&scope=user:email&redirect_uri=${redirectUri}`);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-300 to-purple-300 p-4">
@@ -178,17 +191,22 @@ const SignUpPage = () => {
             >
               Password
             </label>
-            <input
-              type="password"
-              id="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className={`mt-1 block w-full px-4 py-2.5 border rounded-lg shadow-sm bg-white/50 placeholder:text-gray-500/90 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.password ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className={`mt-1 block w-full px-4 py-2.5 border rounded-lg shadow-sm bg-white/50 placeholder:text-gray-500/90 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.password ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
             {errors.password && (
               <p className="mt-1 text-sm text-red-600">{errors.password}</p>
             )}
@@ -201,17 +219,22 @@ const SignUpPage = () => {
             >
               Confirm Password
             </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              placeholder="Confirm your password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              className={`mt-1 block w-full px-4 py-2.5 border rounded-lg shadow-sm bg-white/50 placeholder:text-gray-500/90 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                id="confirmPassword"
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className={`mt-1 block w-full px-4 py-2.5 border rounded-lg shadow-sm bg-white/50 placeholder:text-gray-500/90 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           {errors.confirmPassword && (
             <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
           )}
@@ -238,7 +261,7 @@ const SignUpPage = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4">
-          {["Google", "LinkedIn", "GitHub"].map((provider) => {
+          {["Google", "GitHub"].map((provider) => {
             if (provider === "Google") {
               return (
                 <button
@@ -254,11 +277,7 @@ const SignUpPage = () => {
             return (
               <button
                 key={provider}
-                onClick={() => {
-                  // Simulate OAuth login
-                  login();
-                  navigate('/home');
-                }}
+                onClick={handleGitHubSignIn}
                 className="flex-1 flex items-center justify-center py-2.5 border border-gray-300 bg-white rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <span className="font-medium text-black">{provider}</span>

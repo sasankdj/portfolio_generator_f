@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useAuth } from './AuthContext';
 
@@ -25,7 +25,7 @@ export const PortfolioProvider = ({ children }) => {
   });
 
   const [resume, setResume] = useState(null);
-  const [hasResume, setHasResume] = useState(false);
+  const [hasResume] = useState(false);
   const [hasPortfolio, setHasPortfolio] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -35,47 +35,9 @@ export const PortfolioProvider = ({ children }) => {
   const [githubUsername, setGithubUsername] = useState('');
   const [netlifyUsername, setNetlifyUsername] = useState('');
 
-  useEffect(() => {
-    // Load from localStorage
-    const savedDetails = localStorage.getItem('userDetails');
-    if (savedDetails) setUserDetails(JSON.parse(savedDetails));
-
-    const savedResume = localStorage.getItem('hasResume') === 'true';
-    setHasResume(savedResume);
-
-    const savedPortfolio = localStorage.getItem('hasPortfolio') === 'true';
-    setHasPortfolio(savedPortfolio);
-
-    const savedTemplate = localStorage.getItem('selectedTemplate');
-    if (savedTemplate) setSelectedTemplate(savedTemplate);
-
-    const savedLink = localStorage.getItem('portfolioLink');
-    if (savedLink) setPortfolioLink(savedLink);
-
-    const savedGithub = localStorage.getItem('githubConnected') === 'true';
-    setGithubConnected(savedGithub);
-
-    const savedNetlify = localStorage.getItem('netlifyConnected') === 'true';
-    setNetlifyConnected(savedNetlify);
-
-    const savedGithubUser = localStorage.getItem('githubUsername');
-    if (savedGithubUser) setGithubUsername(savedGithubUser);
-
-    const savedNetlifyUser = localStorage.getItem('netlifyUsername');
-    if (savedNetlifyUser) setNetlifyUsername(savedNetlifyUser);
-  }, []);
-
   const updateUserDetails = (details) => {
-    if (typeof details === 'function') {
-      setUserDetails(prevDetails => {
-        const newDetails = details(prevDetails);
-        localStorage.setItem('userDetails', JSON.stringify(newDetails));
-        return newDetails;
-      });
-    } else {
-      setUserDetails(details);
-      localStorage.setItem('userDetails', JSON.stringify(details));
-    }
+    // This function will now only update the state, not localStorage.
+    setUserDetails(details);
   };
 
   const fetchUserDetails = async (token) => {
@@ -111,7 +73,8 @@ export const PortfolioProvider = ({ children }) => {
   };
 
   const saveUserDetails = async (detailsToSave) => {
-    if (!user || !user.id || !user.token) {
+    const token = user?.token;
+    if (!token) {
       toast.warn('You must be logged in to save your details.');
       return;
     }
@@ -121,7 +84,7 @@ export const PortfolioProvider = ({ children }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}`,
+          'Authorization': `Bearer ${token}`,
         },
         // The backend can get the userId from the token, but sending it is also fine.
         body: JSON.stringify({ userId: user.id, ...detailsToSave }),
@@ -134,7 +97,7 @@ export const PortfolioProvider = ({ children }) => {
       toast.success('Your portfolio details have been saved!');
     } catch (error) {
       console.error('Error saving user details:', error);
-      toast.error('Could not save your details. Your changes are saved locally.');
+      toast.error('Could not save your details to the server.');
     } finally {
       setLoading(false);
     }
@@ -142,8 +105,6 @@ export const PortfolioProvider = ({ children }) => {
 
   const uploadResume = async (file) => {
     setResume(file);
-    setHasResume(true);
-    localStorage.setItem('hasResume', 'true');
 
     const formData = new FormData();
     formData.append('resume', file);
@@ -172,31 +133,24 @@ export const PortfolioProvider = ({ children }) => {
 
   const createPortfolio = () => {
     setHasPortfolio(true);
-    localStorage.setItem('hasPortfolio', 'true');
   };
 
   const selectTemplate = (template) => {
     setSelectedTemplate(template);
-    localStorage.setItem('selectedTemplate', template);
   };
 
   const setPortfolioURL = (url) => {
     setPortfolioLink(url);
-    localStorage.setItem('portfolioLink', url);
   };
 
   const connectGithub = (username) => {
     setGithubConnected(true);
     setGithubUsername(username);
-    localStorage.setItem('githubConnected', 'true');
-    localStorage.setItem('githubUsername', username);
   };
 
   const connectNetlify = (username) => {
     setNetlifyConnected(true);
     setNetlifyUsername(username);
-    localStorage.setItem('netlifyConnected', 'true');
-    localStorage.setItem('netlifyUsername', username);
   };
 
   const downloadPortfolioHtml = async (template) => {
