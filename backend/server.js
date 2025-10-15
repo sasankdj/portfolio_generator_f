@@ -368,6 +368,34 @@ Enhanced JSON Output:
   }
 });
 
+app.post('/api/chatbot', async (req, res) => {
+  const { messages } = req.body;
+
+  if (!messages || messages.length === 0) {
+    return res.status(400).json({ error: 'No messages provided.' });
+  }
+
+  try {
+    const conversationHistory = messages.map(m => `${m.role}: ${m.content}`).join('\n');
+
+    const prompt = `
+You are 'Vita', a friendly and helpful chatbot assistant for a portfolio builder website.
+Your primary goal is to help users build their portfolio. You are currently in a conversation with a user.
+
+Here is the conversation history:
+${conversationHistory}
+
+The user's last message is a question. Provide a helpful and concise answer. Do not ask to continue the form-filling script. Just answer the question.
+`;
+    const response = await ai.models.generateContent({ model: "gemini-2.5-flash", contents: prompt });
+    const reply = response.text || "I'm not sure how to answer that. Let's continue with the form.";
+    res.json({ reply });
+  } catch (err) {
+    console.error("Chatbot AI error:", err);
+    res.status(500).json({ reply: "Sorry, I'm having a little trouble thinking right now. Please try again in a moment." });
+  }
+});
+
 app.post('/api/upload-resume', upload.single('resume'), async (req, res) => {
   if (!req.file) return res.status(400).send('No file uploaded.');
 

@@ -1,13 +1,30 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { usePortfolio } from '../components/PortfolioContext';
 import Footer from "../components/Footer";
 import { useAuth } from '../components/AuthContext';
+import Chatbot from '../components/Chatbot';
+import { Github } from 'lucide-react';
 
 export default function Home() {
   const navigate = useNavigate();
-  const { hasResume, hasPortfolio, portfolioLink } = usePortfolio();
+  const { hasResume, hasPortfolio, portfolioLink, userDetails, updateUserDetails } = usePortfolio();
   const { user } = useAuth();
+  const [githubUsername, setGithubUsername] = useState('');
+
+  const handleGithubSubmit = () => {
+    if (!githubUsername.trim()) {
+      toast.error("Please enter a GitHub username or link.");
+      return;
+    }
+    // Extract username from URL if provided, otherwise use the input as is
+    const usernameMatch = githubUsername.match(/github\.com\/([a-zA-Z0-9_-]+)/);
+    const username = usernameMatch ? usernameMatch[1] : githubUsername.trim();
+
+    updateUserDetails({ ...userDetails, github: `https://github.com/${username}` });
+    navigate('/form');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 font-sans">
@@ -63,6 +80,26 @@ export default function Home() {
               >
                 Upload Resume
               </button>
+            </div>
+            {/* GitHub Import */}
+            <div className="flex items-center p-4 rounded-xl transition-all duration-300 bg-gray-800 border-gray-700 border text-white">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-4 bg-gray-600">
+                <Github size={24} />
+              </div>
+              <div className="flex-grow">
+                <h4 className="text-lg font-semibold">Add your GitHub</h4>
+                <p className="text-sm text-gray-300">Enter your username to add a link to your portfolio.</p>
+                <div className="mt-2 flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    value={githubUsername}
+                    onChange={(e) => setGithubUsername(e.target.value)}
+                    placeholder="Enter GitHub Username or Link"
+                    className="flex-grow px-3 py-1.5 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm"
+                  />
+                  <button onClick={handleGithubSubmit} className="px-4 py-1.5 bg-indigo-500 rounded-md font-semibold hover:bg-indigo-600 transition-colors text-sm whitespace-nowrap">Add to Form</button>
+                </div>
+              </div>
             </div>
             {/* Option 2: Fill Manually */}
             <div className="flex items-center p-4 rounded-xl bg-gray-50 border-gray-200 border">
@@ -150,6 +187,7 @@ export default function Home() {
       </section>
 
       <Footer />
+      <Chatbot />
     </div>
   );
 }

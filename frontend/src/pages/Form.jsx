@@ -5,6 +5,7 @@ import { usePortfolio } from "../components/PortfolioContext";
 import FormInputs from "../components/FormInputs";
 import JSZip from 'jszip';
 import Footer from "../components/Footer";
+import Chatbot from "../components/Chatbot";
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 function Form() {
@@ -185,7 +186,7 @@ function Form() {
             </button>
           </div>
         </div>
-      </div>
+      </div><Chatbot />
       <Footer />
     </div>
     
