@@ -23,7 +23,7 @@ const Navbar = () => {
         </>
       )}
       <NavLink to="/about" className={({ isActive }) => `text-xl font-semibold ${isActive ? 'text-yellow-300' : 'text-white'} hover:text-yellow-300 transition-all duration-300 drop-shadow-md`}>About Us</NavLink>
-      <NavLink to="/contact" className={({ isActive }) => `text-xl font-semibold ${isActive ? 'text-yellow-300' : 'text-white'} hover:text-yellow-300 transition-all duration-300 drop-shadow-md`}>Contact Us</NavLink>
+      {/* <NavLink to="/contact" className={({ isActive }) => `text-xl font-semibold ${isActive ? 'text-yellow-300' : 'text-white'} hover:text-yellow-300 transition-all duration-300 drop-shadow-md`}>Contact Us</NavLink> */}
       {!isLoggedIn ? (
         <>
           <NavLink to="/login" className={({ isActive }) => `text-xl font-semibold ${isActive ? 'text-yellow-300' : 'text-white'} hover:text-yellow-300 transition-all duration-300 drop-shadow-md`}>Login</NavLink>
