@@ -1,0 +1,217 @@
+<!-- ✅ FULL UPDATED HTML WITH DUMMY DATA STARTS BELOW -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Professional Portfolio - Alex Johnson</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .project-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+    .testimonial-card { transition: all 0.3s ease; }
+    .testimonial-card:hover { transform: scale(1.02); }
+  </style>
+</head>
+<body class="font-sans bg-gray-50">
+
+  <!-- Header -->
+  <header class="fixed w-full bg-white shadow-md z-50">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <a href="#" class="text-2xl font-bold text-indigo-700">Alex Johnson</a>
+        <nav class="hidden md:flex space-x-8">
+          <a href="#home" class="text-gray-700 hover:text-indigo-600 font-medium">Home</a>
+          <a href="#about" class="text-gray-700 hover:text-indigo-600 font-medium">About</a>
+          <a href="#portfolio" class="text-gray-700 hover:text-indigo-600 font-medium">Portfolio</a>
+          <a href="#testimonials" class="text-gray-700 hover:text-indigo-600 font-medium">Testimonials</a>
+          <a href="#contact" class="text-gray-700 hover:text-indigo-600 font-medium">Contact</a>
+        </nav>
+        <button class="md:hidden focus:outline-none">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section id="home" class="gradient-bg text-white pt-32 pb-20 md:pt-40 md:pb-28">
+    <div class="container mx-auto px-6 flex flex-col md:flex-row items-center">
+      <div class="md:w-1/2 mb-12 md:mb-0">
+        <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6">Full Stack MERN Developer</h1>
+        <p class="text-xl mb-8 opacity-90 max-w-lg">Passionate MERN developer with hands-on experience in building scalable web applications and interactive UI experiences.</p>
+        <a href="#contact" class="bg-white text-indigo-700 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition">Hire Me</a>
+      </div>
+      <div class="md:w-1/2 flex justify-center">
+        <div class="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white shadow-xl">
+          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Professional headshot of Alex Johnson" class="w-full h-full object-cover">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="about" class="py-20 bg-white">
+    <div class="container mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-bold text-gray-800 mb-4">About Me</h2>
+        <div class="w-20 h-1 bg-indigo-600 mx-auto"></div>
+      </div>
+      <div class="flex flex-col md:flex-row items-center">
+        <div class="md:w-1/3 mb-8 md:mb-0 flex justify-center">
+          <div class="w-64 h-64 rounded-lg overflow-hidden shadow-lg">
+            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Alex Johnson" class="w-full h-full object-cover">
+          </div>
+        </div>
+        <div class="md:w-2/3 md:pl-12">
+          <h3 class="text-2xl font-semibold text-gray-800 mb-4">Full Stack MERN Developer</h3>
+          <p class="text-gray-600 mb-6 leading-relaxed">
+            I specialize in building full-stack web applications using the MERN stack and creating smooth, elegant UI/UX experiences.
+          </p>
+
+          <h4 class="text-xl font-medium text-gray-800 mb-3">Skills & Expertise</h4>
+          <div class="flex flex-wrap gap-3 mb-8">
+            <span class="px-4 py-2 bg-gray-100 rounded-full text-gray-700 text-sm">React</span>
+            <span class="px-4 py-2 bg-gray-100 rounded-full text-gray-700 text-sm">Node.js</span>
+            <span class="px-4 py-2 bg-gray-100 rounded-full text-gray-700 text-sm">Express.js</span>
+            <span class="px-4 py-2 bg-gray-100 rounded-full text-gray-700 text-sm">MongoDB</span>
+            <span class="px-4 py-2 bg-gray-100 rounded-full text-gray-700 text-sm">TailwindCSS</span>
+            <span class="px-4 py-2 bg-gray-100 rounded-full text-gray-700 text-sm">Git</span>
+            <span class="px-4 py-2 bg-gray-100 rounded-full text-gray-700 text-sm">Firebase</span>
+            <span class="px-4 py-2 bg-gray-100 rounded-full text-gray-700 text-sm">Docker</span>
+          </div>
+
+          <a href="#" class="inline-block border-2 border-indigo-600 text-indigo-600 px-6 py-2 rounded hover:bg-indigo-600 hover:text-white transition">Download Resume</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Portfolio Projects -->
+  <section id="portfolio" class="py-20 bg-gray-50">
+    <div class="container mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-bold text-gray-800 mb-4">My Work</h2>
+        <div class="w-20 h-1 bg-indigo-600 mx-auto"></div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-10">
+        <!-- PROJECT 1 -->
+        <div class="project-card bg-white p-6 rounded-lg shadow-md">
+          <img src="https://placehold.co/600x400" class="w-full h-48 object-cover rounded mb-6" alt="Project Preview">
+          <h3 class="text-xl font-bold mb-2">TaskFlow - Productivity Dashboard</h3>
+          <p class="text-gray-600 mb-4">A MERN-based productivity application with real-time task tracking, Kanban board, and JWT authentication.</p>
+          <a href="#" class="text-indigo-600 font-medium hover:underline">View Project →</a>
+        </div>
+
+        <!-- PROJECT 2 -->
+        <div class="project-card bg-white p-6 rounded-lg shadow-md">
+          <img src="https://placehold.co/600x400" class="w-full h-48 object-cover rounded mb-6" alt="Project Preview">
+          <h3 class="text-xl font-bold mb-2">DevConnect - Developer Social Platform</h3>
+          <p class="text-gray-600 mb-4">A social media platform for developers to connect, share projects, and collaborate on open-source ideas.</p>
+          <a href="#" class="text-indigo-600 font-medium hover:underline">View Project →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="testimonials" class="py-20 bg-white">
+    <div class="container mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-bold text-gray-800 mb-4">Testimonials</h2>
+        <div class="w-20 h-1 bg-indigo-600 mx-auto"></div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="testimonial-card bg-gray-50 p-6 rounded-lg shadow">
+          <p class="text-gray-600 italic mb-4">"Alex delivered exceptional work on our web platform. His attention to detail and ability to solve complex problems made him a valuable asset."</p>
+          <h4 class="font-bold text-gray-800">Sarah Williams</h4>
+          <span class="text-sm text-gray-500">Product Manager, TechNova</span>
+        </div>
+
+        <div class="testimonial-card bg-gray-50 p-6 rounded-lg shadow">
+          <p class="text-gray-600 italic mb-4">"Great communication and technical skills. The MERN app he built for us increased user engagement by 40%."</p>
+          <h4 class="font-bold text-gray-800">Michael Carter</h4>
+          <span class="text-sm text-gray-500">Lead Engineer, CodeWorks</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="py-20 gradient-bg text-white">
+    <div class="container mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-bold mb-4">Get In Touch</h2>
+        <div class="w-20 h-1 bg-white mx-auto"></div>
+      </div>
+
+      <div class="max-w-3xl mx-auto">
+        <div class="bg-white text-gray-800 rounded-lg shadow-xl p-8 md:p-10">
+          <form>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-gray-700 font-medium mb-2">Name</label>
+                <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-md">
+              </div>
+              <div>
+                <label class="block text-gray-700 font-medium mb-2">Email</label>
+                <input type="email" class="w-full px-4 py-2 border border-gray-300 rounded-md">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-gray-700 font-medium mb-2">Subject</label>
+                <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-md">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-gray-700 font-medium mb-2">Message</label>
+                <textarea rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-md"></textarea>
+              </div>
+              <div class="md:col-span-2">
+                <button type="submit" class="w-full md:w-auto px-8 py-3 bg-indigo-600 text-white rounded-md">Send Message</button>
+              </div>
+            </div>
+          </form>
+
+          <div class="mt-12 pt-8 border-t border-gray-200 text-center">
+            <h4 class="text-xl font-medium text-gray-800 mb-4">Contact Info</h4>
+            <p class="text-gray-600 mb-4">Email: <a href="mailto:alex.johnson.dev@example.com" class="text-indigo-600 hover:underline">alex.johnson.dev@example.com</a></p>
+
+            <div class="flex justify-center space-x-6">
+              <a href="#" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                <i class="fab fa-linkedin-in text-gray-700"></i>
+              </a>
+              <a href="#" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                <i class="fab fa-github text-gray-700"></i>
+              </a>
+              <a href="#" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                <i class="fab fa-twitter text-gray-700"></i>
+              </a>
+              <a href="#" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                <i class="fab fa-instagram text-gray-700"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white py-8">
+    <div class="container mx-auto px-6">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div>
+          <a href="#" class="text-2xl font-bold">Alex Johnson</a>
+          <p class="text-gray-400 mt-2">© 2024 All Rights Reserved</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
+<!-- ✅ END -->

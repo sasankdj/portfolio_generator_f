@@ -6,6 +6,10 @@ import ClassicTheme from '../templates/ClassicTheme.html?raw';
 import DarkTheme from '../templates/DarkTheme.html?raw';
 import MinimalistTheme from '../templates/MinimalistTheme.html?raw';
 import CreativeTheme from '../templates/CreativeTheme.html?raw';
+import PreviewClassic from '../templates/PreviewClassic.html?raw';
+import PreviewDark from '../templates/PreviewDark.html?raw';
+import PreviewMinimalist from '../templates/PreviewMinimalist.html?raw';
+import PreviewCreative from '../templates/PreviewCreative.html?raw';
 
 export default function Templates() {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -48,7 +52,7 @@ export default function Templates() {
       gradient: 'from-blue-600 to-indigo-700',
       previewGradient: 'from-blue-200 to-indigo-300',
       icon: '💼',
-      content: ClassicTheme
+      content: PreviewClassic
     },
     {
       id: 'dark',
@@ -58,7 +62,7 @@ export default function Templates() {
       gradient: 'from-gray-700 to-gray-900',
       previewGradient: 'from-gray-200 to-gray-400',
       icon: '🌙',
-      content: DarkTheme
+      content: PreviewDark
     },
     {
       id: 'minimal',
@@ -68,7 +72,7 @@ export default function Templates() {
       gradient: 'from-slate-400 to-slate-600',
       previewGradient: 'from-slate-200 to-slate-300',
       icon: '🎨',
-      content: MinimalistTheme
+      content: PreviewMinimalist
     },
     {
       id: 'creative',
@@ -78,7 +82,7 @@ export default function Templates() {
       gradient: 'from-pink-400 to-purple-600',
       previewGradient: 'from-pink-200 to-purple-300',
       icon: '🎭',
-      content: CreativeTheme
+      content: PreviewCreative
     }
   ];
 
