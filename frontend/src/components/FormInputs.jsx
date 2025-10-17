@@ -89,7 +89,13 @@ const FormInputs = ({ formData, setFormData }) => {
   };
 
   const handleAddAchievement = () => {
-    setFormData(prev => ({ ...prev, achievements: [...(prev.achievements || []), { quote: '' }] }));
+    const currentAchievements = formData.achievements || [];
+    const lastAchievement = currentAchievements[currentAchievements.length - 1];
+    if (lastAchievement && !lastAchievement.quote.trim()) {
+      toast.warn("Please fill the last testimonial before adding a new one.");
+      return;
+    }
+    setFormData(prev => ({ ...prev, achievements: [...currentAchievements, { quote: '' }] }));
     toast.success("New testimonial added.");
   };
 
@@ -144,7 +150,7 @@ const FormInputs = ({ formData, setFormData }) => {
           : prev.experience,
         // Convert the array of strings for achievements into an array of objects
         achievements: Array.isArray(data.achievements) && data.achievements.length > 0
-          ? data.achievements.map(quote => ({ quote }))
+          ? data.achievements.filter(quote => quote && quote.trim()).map(quote => ({ quote }))
           : prev.achievements,
       }));
     } catch (err) {

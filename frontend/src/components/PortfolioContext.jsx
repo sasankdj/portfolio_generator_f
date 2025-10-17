@@ -65,6 +65,18 @@ export const PortfolioProvider = ({ children }) => {
       }
 
       const data = await response.json();
+
+      // Normalize achievements to array of objects
+      if (data.achievements) {
+        if (typeof data.achievements === 'string') {
+          data.achievements = [{ quote: data.achievements }];
+        } else if (Array.isArray(data.achievements) && data.achievements.length > 0) {
+          data.achievements = data.achievements.map(item =>
+            typeof item === 'string' ? { quote: item } : item
+          ).filter(item => item.quote && item.quote.trim());
+        }
+      }
+
       updateUserDetails(data); // This updates both state and localStorage
       toast.info('Your saved portfolio details have been loaded.');
     } catch (error) {
