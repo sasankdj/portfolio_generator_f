@@ -12,7 +12,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL;
 export default function ResumeTemplates() {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [previewTemplate, setPreviewTemplate] = useState(null);
-  const { userDetails } = usePortfolio();
+  const { userDetails, saveUserDetails } = usePortfolio();
   const navigate = useNavigate();
 
   const templates = [
@@ -49,6 +49,9 @@ export default function ResumeTemplates() {
       toast.error('Please select a template first.');
       return;
     }
+
+    // Save details to backend before creating resume
+    await saveUserDetails(userDetails);
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/generate-resume`, {

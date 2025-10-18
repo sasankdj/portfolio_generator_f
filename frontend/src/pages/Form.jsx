@@ -62,6 +62,7 @@ function Form() {
 
   const createAndNavigate = async () => {
     updateUserDetails(formData); // Update context before action
+    await saveUserDetails(formData); // Save details to backend
     try {
       const response = await fetch(`${API_BASE_URL}/generate-portfolio`, {
         method: 'POST',
@@ -78,7 +79,7 @@ function Form() {
         throw new Error('Failed to generate portfolio');
       }
 
-      const data = await response.json();      
+      const data = await response.json();
       const blob = new Blob([data.html], { type: 'text/html' });
       const blobUrl = URL.createObjectURL(blob);
       toast.success("Portfolio created successfully!");
@@ -92,6 +93,7 @@ function Form() {
 
   const downloadHtmlFile = async () => {
   updateUserDetails(formData); // Update context before action
+  await saveUserDetails(formData); // Save details to backend
   try {
     const response = await fetch(`${API_BASE_URL}/generate-portfolio`, {
       method: 'POST',
@@ -136,6 +138,7 @@ function Form() {
 
   const downloadPdfFile = async () => {
     updateUserDetails(formData); // Update context before action
+    await saveUserDetails(formData); // Save details to backend
     try {
       const response = await fetch(`${API_BASE_URL}/api/download-portfolio`, {
         method: 'POST',
@@ -172,6 +175,7 @@ function Form() {
 
   const downloadDocxFile = async () => {
     updateUserDetails(formData); // Update context before action
+    await saveUserDetails(formData); // Save details to backend
     try {
       const response = await fetch(`${API_BASE_URL}/api/download-portfolio`, {
         method: 'POST',
@@ -277,13 +281,13 @@ function Form() {
               <div className="space-y-3">
                 <button
                   className="w-full flex items-center justify-center px-4 py-3 text-white bg-red-500 rounded-lg hover:bg-red-600 transition"
-                  onClick={downloadPdfFile}
+                  onClick={()=>navigate('/resume-templates')}
                 >
                   📄 Download PDF
                 </button>
                 <button
                   className="w-full flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
-                  onClick={downloadDocxFile}
+                  onClick={()=>navigate('/resume-templates')}
                 >
                   📄 Download DOCX
                 </button>

@@ -774,7 +774,7 @@ function populateResumeTemplate(templateHtml, formData) {
 
   // Projects
   if (formData.projects && formData.projects.length > 0) {
-    const projectsHtml = formData.projects.map(proj => `<p><strong>${proj.title}</strong></p><ul><li>${proj.description}</li><li><a href="${proj.link || '#'}">${proj.link || 'View Project'}</a></li></ul>`).join('');
+    const projectsHtml = formData.projects.map(proj => `<p><strong>${proj.title}</strong></p><ul><li>${proj.description}</li><li><a href="${proj.link || '#'}">${proj.link || ' '}</a></li></ul>`).join('');
     generatedHtml = generatedHtml.replace('<!-- PROJECTS -->', projectsHtml);
   }
 

@@ -46,7 +46,7 @@ export default function Home() {
               🌐 Create Portfolio Website
             </button>
             <button
-              onClick={() => navigate('/resume-templates')}
+              onClick={() => navigate('/form')}
               className="px-8 py-4 bg-white text-indigo-700 font-bold rounded-lg shadow-lg hover:bg-gray-100 transition-transform transform hover:scale-105"
             >
               📄 Create ATS Resume
