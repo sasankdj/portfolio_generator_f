@@ -24,7 +24,8 @@ export const PortfolioProvider = ({ children }) => {
     careerObjective: '',
     projects: [{ title: '', description: '', link: '' }, { title: '', description: '', link: '' }],
     experience: [{ company: '', jobTitle: '', duration: '', responsibilities: [] }],
-    achievements: [{ quote: '' }]
+    achievements: [{ quote: '' }],
+    education: [{ university: '', degree: '', duration: '', details: '' }]
   });
 
   const [resume, setResume] = useState(null);
@@ -75,6 +76,16 @@ export const PortfolioProvider = ({ children }) => {
             typeof item === 'string' ? { quote: item } : item
           ).filter(item => item.quote && item.quote.trim());
         }
+      }
+
+      // Also normalize education
+      if (data.education && Array.isArray(data.education)) {
+        data.education = data.education.map(edu => ({
+            university: edu.university || '',
+            degree: edu.degree || '',
+            duration: edu.duration || '',
+            details: edu.details || ''
+        }));
       }
 
       updateUserDetails(data); // This updates both state and localStorage

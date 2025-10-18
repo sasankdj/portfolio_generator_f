@@ -430,6 +430,7 @@ Extract the following fields from this resume text as JSON only (no explanations
   "linkedin": "",
   "careerObjective": "",
   "skills": [],
+  "education": [{ "university": "", "degree": "", "duration": "", "details": "" }],
   "projects": [{ "title": "", "description": "", "technologies": "", "link": "" }],
   "experience": [{ "jobTitle": "", "company": "", "duration": "", "responsibilities": [] }],
   "achievements": []
@@ -513,6 +514,13 @@ const parseResumeText = (text) => {
   const skillsMatch = text.match(/SKILLS\n([\s\S]*?)(?=\n\n|CERTIFICATIONS)/i);
   if (skillsMatch && skillsMatch[1]) {
     response.skills = skillsMatch[1].replace(/\n/g, ', ').replace(/, ,/g, ',').replace(/,$/, '').trim();
+  }
+
+  // Try to find education
+  const educationMatch = text.match(/EDUCATION\n([\s\S]*?)(?=\n\nSKILLS|\n\nEXPERIENCE)/i);
+  if (educationMatch && educationMatch[1]) {
+    const [university, degree, duration, ...details] = educationMatch[1].trim().split('\n');
+    response.education = [{ university: university?.replace(/,.*$/, '').trim() || '', degree: degree?.split('(')[0].trim() || '', duration: duration?.match(/\((.*?)\)/)?.[1] || '', details: details.join(' ').trim() }];
   }
 
   // Try to find projects
@@ -772,7 +780,7 @@ function populateResumeTemplate(templateHtml, formData) {
 
   // Achievements
   if (formData.achievements && formData.achievements.length > 0) {
-    const achievementsHtml = formData.achievements.map(ach => `<li>${ach}</li>`).join('');
+    const achievementsHtml = formData.achievements.map(ach => `<li>${ach.quote || ''}</li>`).join('');
     generatedHtml = generatedHtml.replace('<!-- ACHIEVEMENTS -->', `<ul>${achievementsHtml}</ul>`);
   }
 
@@ -788,6 +796,7 @@ app.post('/api/generate-resume', async (req, res) => {
 
   const templateMap = {
     resume1: 'resume1',
+    resume2: 'resume2',
   };
 
   const sanitizedTemplate = path.normalize(template).replace(/^(\.\.[/\\])+/, '');
@@ -818,7 +827,7 @@ app.post('/api/download-resume', async (req, res) => {
     return res.status(400).json({ error: 'Missing formData, template, or format' });
   }
 
-  const templateMap = { resume1: 'resume1' };
+  const templateMap = { resume1: 'resume1', resume2: 'resume2' };
   const sanitizedTemplate = path.normalize(template).replace(/^(\.\.[/\\])+/, '');
   const templateFileName = templateMap[sanitizedTemplate];
 
@@ -951,7 +960,8 @@ app.post('/api/download-resume', async (req, res) => {
                 new Paragraph({
                   children: [
                     new TextRun({
-                      text: `${edu.university || ''}, ${edu.location || ''}`,
+                      text: `${edu.university || ''} (${edu.duration || ''})`,
+                      bold: true,
                       size: 24,
                     }),
                   ],
@@ -959,21 +969,22 @@ app.post('/api/download-resume', async (req, res) => {
                 new Paragraph({
                   children: [
                     new TextRun({
-                      text: `${edu.degree || ''} (${edu.duration || ''})`,
+                      text: edu.degree || '',
                       size: 24,
                     }),
                   ],
                 }),
-                ...(edu.details ? [
+                ...(edu.details ? edu.details.split('\n').filter(line => line.trim()).map(line =>
                   new Paragraph({
+                    bullet: { level: 0 },
                     children: [
                       new TextRun({
-                        text: edu.details,
+                        text: line.trim(),
                         size: 24,
                       }),
                     ],
-                  }),
-                ] : []),
+                  })
+                ) : []),
                 new Paragraph({ children: [] }), // empty line
               ]),
             ] : []),
@@ -1111,7 +1122,7 @@ app.post('/api/download-resume', async (req, res) => {
                 bullet: { level: 0 },
                 children: [
                   new TextRun({
-                    text: ach,
+                    text: typeof ach === 'string' ? ach : ach.quote || '',
                     size: 24,
                   }),
                 ],

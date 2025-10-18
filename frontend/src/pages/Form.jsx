@@ -134,6 +134,78 @@ function Form() {
   }
 };
 
+  const downloadPdfFile = async () => {
+    updateUserDetails(formData); // Update context before action
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/download-portfolio`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          formData,
+          template: selectedTemplateId,
+          format: 'pdf',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF portfolio');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'portfolio.pdf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      toast.success('Portfolio PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading portfolio PDF:', error);
+      toast.error('Error downloading portfolio PDF. Please try again.');
+    }
+  };
+
+  const downloadDocxFile = async () => {
+    updateUserDetails(formData); // Update context before action
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/download-portfolio`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          formData,
+          template: selectedTemplateId,
+          format: 'docx',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate DOCX portfolio');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'portfolio.docx';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      toast.success('Portfolio DOCX downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading portfolio DOCX:', error);
+      toast.error('Error downloading portfolio DOCX. Please try again.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-5xl mx-auto">
@@ -165,6 +237,18 @@ function Form() {
               onClick={downloadHtmlFile}
             >
               📄 Download HTML
+            </button>
+            <button
+              className="flex-1 flex items-center justify-center px-4 py-3 text-white bg-red-500 rounded-lg hover:bg-red-600 transition"
+              onClick={downloadPdfFile}
+            >
+              📄 Download PDF
+            </button>
+            <button
+              className="flex-1 flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
+              onClick={downloadDocxFile}
+            >
+              📄 Download DOCX
             </button>
             <button
               className="flex-1 flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"

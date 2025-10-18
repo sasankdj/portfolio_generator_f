@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePortfolio } from '../components/PortfolioContext';
 import { toast } from 'react-toastify';
 import Resume1Preview from '../resumes/resume1.html?raw'; // Using the same for preview
+import Resume2Preview from '../resumes/resume2.html?raw'; // New template preview
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -23,6 +24,15 @@ export default function ResumeTemplates() {
       content: Resume1Preview,
       gradient: 'from-gray-700 to-gray-900',
       previewGradient: 'from-gray-200 to-gray-400',
+    },
+    {
+      id: 'resume2',
+      name: 'Modern Resume',
+      description: 'A sleek and contemporary resume template with a clean layout.',
+      icon: '📋',
+      content: Resume2Preview,
+      gradient: 'from-blue-700 to-blue-900',
+      previewGradient: 'from-blue-200 to-blue-400',
     },
   ];
 

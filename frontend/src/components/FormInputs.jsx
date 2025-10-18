@@ -9,6 +9,7 @@ const FormInputs = ({ formData, setFormData }) => {
   const [isFetchingRepos, setIsFetchingRepos] = useState(false);
   const [isParsingResume, setIsParsingResume] = useState(false);
   const { setLoading: setGlobalLoading } = usePortfolio();
+  const suggestionsContainerRef = useRef(null);
   const reposContainerRef = useRef(null);
   const [enhancing, setEnhancing] = useState(false);
   const fileInputRef = useRef(null);
@@ -71,6 +72,25 @@ const FormInputs = ({ formData, setFormData }) => {
       responsibilities: e.target.value.split("\n"),
     };
     setFormData({ ...formData, experience: newExperience });
+  };
+
+  const handleEducationChange = (index, e) => {
+    const { name, value } = e.target;
+    const newEducation = [...(formData.education || [])];
+    newEducation[index] = { ...newEducation[index], [name]: value };
+    setFormData({ ...formData, education: newEducation });
+  };
+
+  const handleDeleteEducation = (index) => {
+    const newEducation = [...(formData.education || [])];
+    newEducation.splice(index, 1);
+    setFormData({ ...formData, education: newEducation });
+    toast.info("Education entry removed.");
+  };
+
+  const handleAddEducation = () => {
+    setFormData(prev => ({ ...prev, education: [...(prev.education || []), { university: '', degree: '', duration: '', details: '' }] }));
+    toast.success("New education entry added.");
   };
 
   const handleAchievementChange = (index, e) => {
@@ -152,6 +172,9 @@ const FormInputs = ({ formData, setFormData }) => {
         achievements: Array.isArray(data.achievements) && data.achievements.length > 0
           ? data.achievements.filter(quote => quote && quote.trim()).map(quote => ({ quote }))
           : prev.achievements,
+        education: Array.isArray(data.education) && data.education.length > 0
+          ? data.education
+          : prev.education,
       }));
     } catch (err) {
       console.error(err);
@@ -241,6 +264,9 @@ const FormInputs = ({ formData, setFormData }) => {
       const data = await resp.json();
       setGloballyEnhancedData(data.enhancedData);
       toast.success("AI suggestions are ready for your review!");
+      setTimeout(() => {
+        suggestionsContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
     } catch (err) {
       console.error(err);
       toast.error("Error enhancing portfolio. Please try again.");
@@ -296,62 +322,84 @@ const FormInputs = ({ formData, setFormData }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <input
-            name="fullName"
-            value={formData.fullName}
-            onChange={handleInputChange}
-            placeholder="Full Name"
-            className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
-          />
-          <input
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            placeholder="Email"
-            className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
-          />
-          <input
-            name="linkedin"
-            value={formData.linkedin}
-            onChange={handleInputChange}
-            placeholder="LinkedIn URL"
-            className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
-          />
-          <div className="flex items-center gap-2">
+          <div>
+            <label htmlFor="fullName" className="block text-md font-semibold text-gray-800 mb-2">Full Name</label>
             <input
-              name="github"
-              value={formData.github}
+              id="fullName"
+              name="fullName"
+              value={formData.fullName}
               onChange={handleInputChange}
-              placeholder="GitHub Username or URL eg:sasankdj"
+              placeholder="Full Name"
               className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
             />
-            <button
-              onClick={handleFetchRepos}
-              className="px-4 py-3 bg-gray-800 text-white rounded-lg hover:bg-black whitespace-nowrap"
-              disabled={isFetchingRepos || isParsingResume}
-            >
-              {isFetchingRepos ? (
-                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              ) : "Fetch"}
-            </button>
           </div>
-          <input
-            name="headline"
-            value={formData.headline}
-            onChange={handleInputChange}
-            placeholder="Headline (e.g., Senior Software Engineer)"
-            className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1 md:col-span-2"
-          />
+          <div>
+            <label htmlFor="email" className="block text-md font-semibold text-gray-800 mb-2">Email</label>
+            <input
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="Email"
+              className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+            />
+          </div>
+          <div>
+            <label htmlFor="linkedin" className="block text-md font-semibold text-gray-800 mb-2">LinkedIn URL <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
+            <input
+              id="linkedin"
+              name="linkedin"
+              value={formData.linkedin}
+              onChange={handleInputChange}
+              placeholder="LinkedIn URL"
+              className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+            />
+          </div>
+          <div>
+            <label htmlFor="github-personal" className="block text-md font-semibold text-gray-800 mb-2">GitHub Username or URL <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
+            <div className="flex items-center gap-2">
+              <input
+                id="github-personal"
+                name="github"
+                value={formData.github}
+                onChange={handleInputChange}
+                placeholder="GitHub Username or URL eg:sasankdj"
+                className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+              />
+              <button
+                onClick={handleFetchRepos}
+                className="px-4 py-3 bg-gray-800 text-white rounded-lg hover:bg-black whitespace-nowrap"
+                disabled={isFetchingRepos || isParsingResume}
+              >
+                {isFetchingRepos ? (
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : "Fetch"}
+              </button>
+            </div>
+          </div>
+          <div className="md:col-span-2">
+            <label htmlFor="headline" className="block text-md font-semibold text-gray-800 mb-2">Headline <span className="text-gray-500 font-normal text-sm">(e.g., Senior Software Engineer) (autogenerated by ai if not filled)</span></label>
+            <input
+              id="headline"
+              name="headline"
+              value={formData.headline}
+              onChange={handleInputChange}
+              placeholder="Headline"
+              className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+            />
+          </div>
         </div>
         <div className="mt-4">
+          <label htmlFor="image" className="block text-md font-semibold text-gray-800 mb-2">Personal Photo <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
           <input
+            id="image"
             type="file"
             onChange={handleImageChange}
             accept="image/*"
-            className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
+            className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
           />
           {formData.image && (
             <img
@@ -366,12 +414,14 @@ const FormInputs = ({ formData, setFormData }) => {
       {/* GitHub & Repositories */}
       <div className="p-6 border rounded-lg">
         <h3 className="text-xl font-semibold mb-4">GitHub & Repositories</h3>
+        <label htmlFor="github-repo" className="block text-md font-semibold text-gray-800 mb-2">GitHub Username or URL</label>
         <div className="flex items-center gap-2 mb-4">
           <input
+            id="github-repo"
             name="github"
             value={formData.github}
             onChange={handleInputChange}
-            placeholder="GitHub Username or URL eg:sasankdj"
+            placeholder="e.g., sasankdj"
             className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
           />
           <button
@@ -409,7 +459,7 @@ const FormInputs = ({ formData, setFormData }) => {
 
       {/* Professional Summary */}
       <div className="p-6 border rounded-lg">
-        <h3 className="text-xl font-semibold mb-4">Professional Summary</h3>
+        <h3 className="text-xl font-semibold mb-4">Professional Summary <span className="text-gray-400 text-sm font-normal">(autogenerated by ai if not filled)</span></h3>
         <textarea
           name="careerObjective"
           value={formData.careerObjective}
@@ -425,9 +475,76 @@ const FormInputs = ({ formData, setFormData }) => {
         )}
       </div>
 
+      {/* Education */}
+      <div className="p-6 border rounded-lg">
+        <h3 className="text-xl font-semibold mb-4">Education</h3>
+        {Array.isArray(formData.education) &&
+          formData.education.map((edu, index) => (
+            <div key={index} className="flex items-start gap-2 mb-4">
+              <div className="flex-grow p-4 border rounded space-y-4">
+                <div>
+                  <label htmlFor={`edu-university-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Institute Name</label>
+                  <input
+                    id={`edu-university-${index}`}
+                    name="university"
+                    value={edu.university || ""}
+                    onChange={(e) => handleEducationChange(index, e)}
+                    placeholder="e.g., University of Example"
+                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor={`edu-degree-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Degree</label>
+                    <input
+                      id={`edu-degree-${index}`}
+                      name="degree"
+                      value={edu.degree || ""}
+                      onChange={(e) => handleEducationChange(index, e)}
+                      placeholder="e.g., B.S. in Computer Science"
+                      className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor={`edu-duration-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Start/End Date</label>
+                    <input
+                      id={`edu-duration-${index}`}
+                      name="duration"
+                      value={edu.duration || ""}
+                      onChange={(e) => handleEducationChange(index, e)}
+                      placeholder="e.g., 2020 - 2024"
+                      className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor={`edu-details-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Description <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
+                  <textarea
+                    id={`edu-details-${index}`}
+                    name="details"
+                    value={edu.details || ""}
+                    onChange={(e) => handleEducationChange(index, e)}
+                    placeholder="e.g., Relevant coursework, honors, etc."
+                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 h-20"
+                  />
+                </div>
+              </div>
+              <button onClick={() => handleDeleteEducation(index)} className="p-2 mt-4 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors h-10 w-10 flex items-center justify-center" aria-label="Delete education">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              </button>
+            </div>
+          ))}
+        <div className="mt-4 flex justify-center">
+          <button onClick={handleAddEducation} className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            Add Education
+          </button>
+        </div>
+      </div>
+
       {/* AI Suggestions Control */}
       {globallyEnhancedData && (
-        <div className="p-6 border-2 border-dashed border-green-500 rounded-lg bg-green-50 text-center">
+        <div ref={suggestionsContainerRef} className="p-6 border-2 border-dashed border-green-500 rounded-lg bg-green-50 text-center">
           <h3 className="text-xl font-bold text-green-800">AI Suggestions Ready!</h3>
           <p className="text-gray-600 my-3">AI has enhanced your portfolio. You can see suggestions below each section. Apply all changes or reject them.</p>
           <div className="flex justify-center gap-4 mt-4">
@@ -460,35 +577,49 @@ const FormInputs = ({ formData, setFormData }) => {
           formData.projects.map((project, index) => (
             <div key={index} className="flex items-start gap-2 mb-4">
               <div className="flex-grow p-4 border rounded">
+                <label htmlFor={`project-title-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Project Title</label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <input
+                    id={`project-title-${index}`}
                     name="title"
                     value={project.title || ""}
                     onChange={(e) => handleProjectChange(index, e)}
                     placeholder={`Project ${index + 1} Title`}
-                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
+                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
                   />
-                  <input
-                    name="description"
-                    value={project.description || ""}
-                    onChange={(e) => handleProjectChange(index, e)}
-                    placeholder="Description"
-                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
-                  />
-                  <input
-                    name="technologies"
-                    value={project.technologies || ""}
-                    onChange={(e) => handleProjectChange(index, e)}
-                    placeholder="Technologies"
-                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
-                  />
-                  <input
-                    name="link"
-                    value={project.link || ""}
-                    onChange={(e) => handleProjectChange(index, e)}
-                    placeholder="GitHub Link"
-                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1 md:col-span-3"
-                  />
+                  <div className="md:col-span-2">
+                    <label htmlFor={`project-desc-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Description <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
+                    <input
+                      id={`project-desc-${index}`}
+                      name="description"
+                      value={project.description || ""}
+                      onChange={(e) => handleProjectChange(index, e)}
+                      placeholder="Description"
+                      className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+                    />
+                  </div>
+                  <div className="md:col-span-3">
+                    <label htmlFor={`project-tech-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Technologies <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
+                    <input
+                      id={`project-tech-${index}`}
+                      name="technologies"
+                      value={project.technologies || ""}
+                      onChange={(e) => handleProjectChange(index, e)}
+                      placeholder="e.g., React, Node.js, CSS"
+                      className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+                    />
+                  </div>
+                  <div className="md:col-span-3">
+                    <label htmlFor={`project-link-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Project Link <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
+                    <input
+                      id={`project-link-${index}`}
+                      name="link"
+                      value={project.link || ""}
+                      onChange={(e) => handleProjectChange(index, e)}
+                      placeholder="https://github.com/user/project"
+                      className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+                    />
+                  </div>
                   {globallyEnhancedData?.projects?.[index] && (
                     <div className="md:col-span-3 mt-2 p-3 border-l-4 border-purple-400 bg-purple-50 rounded-r-lg">
                       <h4 className="font-semibold text-purple-800 text-sm">AI Suggestion for Project {index + 1}:</h4>
@@ -527,34 +658,50 @@ const FormInputs = ({ formData, setFormData }) => {
         {Array.isArray(formData.experience) &&
           formData.experience.map((exp, index) => (
             <div key={index} className="flex items-start gap-2 mb-4">
-              <div className="flex-grow p-4 border rounded">
-                <input
-                  name="jobTitle"
-                  value={exp.jobTitle || ""}
-                  onChange={(e) => handleExperienceChange(index, e)}
-                  placeholder="Job Title"
-                  className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-2"
-                />
-                <input
-                  name="company"
-                  value={exp.company || ""}
-                  onChange={(e) => handleExperienceChange(index, e)}
-                  placeholder="Company"
-                  className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-2"
-                />
-                <input
-                  name="duration"
-                  value={exp.duration || ""}
-                  onChange={(e) => handleExperienceChange(index, e)}
-                  placeholder="Duration"
-                  className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-2"
-                />
-                <textarea
-                  value={(exp.responsibilities || []).join("\n")}
-                  onChange={(e) => handleResponsibilitiesChange(index, e)}
-                  placeholder="Responsibilities (one per line)"
-                  className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 h-24"
-                />
+              <div className="flex-grow p-4 border rounded space-y-4">
+                <div>
+                  <label htmlFor={`exp-title-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Job Title</label>
+                  <input
+                    id={`exp-title-${index}`}
+                    name="jobTitle"
+                    value={exp.jobTitle || ""}
+                    onChange={(e) => handleExperienceChange(index, e)}
+                    placeholder="Job Title"
+                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+                  />
+                </div>
+                <div>
+                  <label htmlFor={`exp-company-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Company</label>
+                  <input
+                    id={`exp-company-${index}`}
+                    name="company"
+                    value={exp.company || ""}
+                    onChange={(e) => handleExperienceChange(index, e)}
+                    placeholder="Company"
+                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+                  />
+                </div>
+                <div>
+                  <label htmlFor={`exp-duration-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Duration <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
+                  <input
+                    id={`exp-duration-${index}`}
+                    name="duration"
+                    value={exp.duration || ""}
+                    onChange={(e) => handleExperienceChange(index, e)}
+                    placeholder="e.g., Jan 2022 - Present"
+                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+                  />
+                </div>
+                <div>
+                  <label htmlFor={`exp-res-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Responsibilities (one per line) <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
+                  <textarea
+                    id={`exp-res-${index}`}
+                    value={(exp.responsibilities || []).join("\n")}
+                    onChange={(e) => handleResponsibilitiesChange(index, e)}
+                    placeholder="Responsibility 1..."
+                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 h-24"
+                  />
+                </div>
               </div>
               <button
                 onClick={() => handleDeleteExperience(index)}
@@ -585,12 +732,14 @@ const FormInputs = ({ formData, setFormData }) => {
           formData.achievements.map((achievement, index) => (
             <div key={index} className="flex items-start gap-2 mb-4">
               <div className="flex-grow">
+                <label htmlFor={`achieve-quote-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Testimonial / Achievement {index + 1} <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
                 <textarea
+                  id={`achieve-quote-${index}`}
                   name="quote"
                   value={achievement.quote || ""}
                   onChange={(e) => handleAchievementChange(index, e)}
                   placeholder={`Testimonial / Achievement ${index + 1}`}
-                  className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1 h-24"
+                  className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 h-24"
                 />
               </div>
               <button
@@ -613,6 +762,17 @@ const FormInputs = ({ formData, setFormData }) => {
             Add Testimonial
           </button>
         </div>
+      </div>
+
+      <div className="p-4 border rounded-lg bg-gray-50 text-center">
+        <button
+          onClick={enhanceAllWithAI}
+          className="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-transform transform hover:scale-105 shadow-lg"
+          disabled={enhancing}
+        >
+          {enhancing ? "Enhancing..." : "✨ Enhance All with AI"}
+        </button>
+        <p className="text-sm text-gray-500 mt-2">Let AI review and improve your entire portfolio content.</p>
       </div>
 
     </div>
