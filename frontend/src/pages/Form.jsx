@@ -184,6 +184,12 @@ function Form() {
             >
               🎨 Change Template
             </button>
+            <button
+              className="flex-1 flex items-center justify-center px-4 py-3 text-white bg-teal-500 rounded-lg hover:bg-teal-600 transition"
+              onClick={() => navigate('/resume-templates')}
+            >
+              📄 Create Resume
+            </button>
           </div>
         </div>
       </div><Chatbot />

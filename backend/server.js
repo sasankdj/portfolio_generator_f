@@ -12,6 +12,9 @@ import { GoogleGenAI } from "@google/genai";
 import Tesseract from 'tesseract.js'; 
 import { OAuth2Client } from 'google-auth-library';
 import mongoose from 'mongoose';
+import puppeteer from 'puppeteer-core';
+import HTMLToDOCX from 'html-to-docx';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
@@ -101,7 +104,7 @@ app.post('/api/auth/signup', async (req, res) => {
     await user.save();
 
     const payload = { user: { id: user.id } };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     res.json({ token, id: user.id, name: user.name, email: user.email });
   } catch (err) {
@@ -724,6 +727,412 @@ app.post('/generate-portfolio', async (req, res) => {
   }
 });
 
+/**
+ * Populates a given resume HTML template with user data.
+ * @param {string} templateHtml - The raw HTML content of the template.
+ * @param {object} formData - The user's portfolio data.
+ * @returns {string} The populated HTML string.
+ */
+function populateResumeTemplate(templateHtml, formData) {
+  let generatedHtml = templateHtml;
+
+  // --- Replace placeholders ---
+  generatedHtml = generatedHtml.replace(/{{fullName}}/g, formData.fullName || '');
+  generatedHtml = generatedHtml.replace(/{{email}}/g, formData.email || '');
+  generatedHtml = generatedHtml.replace(/{{phone}}/g, formData.phone || '');
+  generatedHtml = generatedHtml.replace(/{{portfolioLink}}/g, formData.portfolioLink || '#');
+  generatedHtml = generatedHtml.replace(/{{github}}/g, formData.github || '#');
+  generatedHtml = generatedHtml.replace(/{{linkedin}}/g, formData.linkedin || '#');
+  generatedHtml = generatedHtml.replace(/{{profile}}/g, formData.careerObjective || '');
+
+  // Education
+  if (formData.education && formData.education.length > 0) {
+    const edu = formData.education[0]; // Assuming one for simplicity
+    let educationHtml = `<p><strong>${edu.university || ''}</strong>, ${edu.location || ''}<br>${edu.degree || ''} (${edu.duration || ''})<br>${edu.details || ''}</p>`;
+    generatedHtml = generatedHtml.replace('<!-- EDUCATION -->', educationHtml);
+  }
+
+  // Skills
+  if (formData.skills) {
+    const skillsHtml = `<p>${formData.skills.split(',').map(s => s.trim()).join(', ')}</p>`;
+    generatedHtml = generatedHtml.replace('<!-- SKILLS -->', skillsHtml);
+  }
+
+  // Experience
+  if (formData.experience && formData.experience.length > 0) {
+    const experienceHtml = formData.experience.map(exp => `<p><strong>${exp.jobTitle || ''} | ${exp.company || ''} (${exp.duration || ''})</strong></p><ul>${(exp.responsibilities || []).map(res => `<li>${res}</li>`).join('')}</ul>`).join('');
+    generatedHtml = generatedHtml.replace('<!-- EXPERIENCE -->', experienceHtml);
+  }
+
+  // Projects
+  if (formData.projects && formData.projects.length > 0) {
+    const projectsHtml = formData.projects.map(proj => `<p><strong>${proj.title}</strong></p><ul><li>${proj.description}</li><li><a href="${proj.link || '#'}">${proj.link || 'View Project'}</a></li></ul>`).join('');
+    generatedHtml = generatedHtml.replace('<!-- PROJECTS -->', projectsHtml);
+  }
+
+  // Achievements
+  if (formData.achievements && formData.achievements.length > 0) {
+    const achievementsHtml = formData.achievements.map(ach => `<li>${ach}</li>`).join('');
+    generatedHtml = generatedHtml.replace('<!-- ACHIEVEMENTS -->', `<ul>${achievementsHtml}</ul>`);
+  }
+
+  return generatedHtml;
+}
+
+app.post('/api/generate-resume', async (req, res) => {
+  const { formData, template } = req.body;
+
+  if (!formData || !template) {
+    return res.status(400).json({ error: 'Missing formData or template' });
+  }
+
+  const templateMap = {
+    resume1: 'resume1',
+  };
+
+  const sanitizedTemplate = path.normalize(template).replace(/^(\.\.[/\\])+/, '');
+  const templateFileName = templateMap[sanitizedTemplate];
+
+  if (!templateFileName) {
+    return res.status(400).json({ error: 'Invalid resume template' });
+  }
+
+  const templatePath = path.join(__dirname, '..', 'frontend', 'src', 'resumes', `${templateFileName}.html`);
+
+  try {
+    let generatedHtml = await fs.readFile(templatePath, 'utf8');
+
+    const finalHtml = populateResumeTemplate(generatedHtml, formData);
+
+    res.json({ html: finalHtml });
+  } catch (error) {
+    console.error('Error in /api/generate-resume:', error);
+    res.status(500).json({ error: 'Failed to generate resume' });
+  }
+});
+
+app.post('/api/download-resume', async (req, res) => {
+  const { formData, template, format } = req.body; // format can be 'pdf' or 'docx'
+
+  if (!formData || !template || !format) {
+    return res.status(400).json({ error: 'Missing formData, template, or format' });
+  }
+
+  const templateMap = { resume1: 'resume1' };
+  const sanitizedTemplate = path.normalize(template).replace(/^(\.\.[/\\])+/, '');
+  const templateFileName = templateMap[sanitizedTemplate];
+
+  if (!templateFileName) {
+    return res.status(400).json({ error: 'Invalid resume template' });
+  }
+
+  const templatePath = path.join(__dirname, '..', 'frontend', 'src', 'resumes', `${templateFileName}.html`);
+
+  try {
+    let generatedHtml = await fs.readFile(templatePath, 'utf8');
+
+    const finalHtml = populateResumeTemplate(generatedHtml, formData);
+
+    if (format === 'pdf') {
+      // Find Chrome executable path for puppeteer-core
+      let executablePath;
+      if (process.platform === 'win32') {
+        const chromePaths = [
+          path.join(process.env['PROGRAMFILES(X86)'], 'Google', 'Chrome', 'Application', 'chrome.exe'),
+          path.join(process.env.PROGRAMFILES, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+          path.join(process.env.LOCALAPPDATA, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+        ];
+        for (const p of chromePaths) {
+          try {
+            await fs.stat(p);
+            executablePath = p;
+            break;
+          } catch (e) {
+            // Path does not exist, continue to the next one
+          }
+        }
+      }
+      // Add paths for macOS and Linux if needed for deployment
+
+      if (!executablePath) {
+        throw new Error('Google Chrome not found. Please install it to generate PDFs.');
+      }
+      const browser = await puppeteer.launch({ executablePath, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+      const page = await browser.newPage();
+      await page.setContent(finalHtml, { waitUntil: 'networkidle0' });
+      const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+      await browser.close();
+      res.type('application/pdf').send(pdfBuffer);
+    } else if (format === 'docx') {
+      // Create DOCX document using docx library with formatting to mimic HTML
+      const doc = new Document({
+        sections: [{
+          properties: {
+            page: {
+              margin: {
+                top: 720, // 0.5 inch
+                right: 720,
+                bottom: 720,
+                left: 720,
+              },
+            },
+          },
+          children: [
+            // Header - centered
+            new Paragraph({
+              alignment: 'center',
+              children: [
+                new TextRun({
+                  text: formData.fullName || '',
+                  bold: true,
+                  size: 44, // 22pt like h1
+                }),
+              ],
+            }),
+            new Paragraph({
+              alignment: 'center',
+              children: [
+                new TextRun({
+                  text: `${formData.phone || ''} | ${formData.email || ''}`,
+                  size: 24, // 12pt
+                }),
+              ],
+            }),
+            ...(formData.portfolioLink || formData.github || formData.linkedin ? [
+              new Paragraph({
+                alignment: 'center',
+                children: [
+                  new TextRun({
+                    text: `${formData.portfolioLink ? `Portfolio: ${formData.portfolioLink}` : ''}${formData.github ? ` | GitHub: ${formData.github}` : ''}${formData.linkedin ? ` | LinkedIn: ${formData.linkedin}` : ''}`,
+                    size: 24,
+                  }),
+                ],
+              }),
+            ] : []),
+            // Profile section
+            ...(formData.careerObjective ? [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: 'PROFILE',
+                    bold: true,
+                    size: 28, // 14pt
+                    underline: {},
+                    allCaps: true,
+                  }),
+                ],
+                spacing: { after: 120 }, // space after
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: formData.careerObjective,
+                    size: 24,
+                  }),
+                ],
+                spacing: { after: 240 }, // more space
+              }),
+            ] : []),
+            // Education section
+            ...(formData.education && formData.education.length > 0 ? [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: 'EDUCATION',
+                    bold: true,
+                    size: 28,
+                    underline: {},
+                    allCaps: true,
+                  }),
+                ],
+                spacing: { after: 120 },
+              }),
+              ...formData.education.flatMap(edu => [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `${edu.university || ''}, ${edu.location || ''}`,
+                      size: 24,
+                    }),
+                  ],
+                }),
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `${edu.degree || ''} (${edu.duration || ''})`,
+                      size: 24,
+                    }),
+                  ],
+                }),
+                ...(edu.details ? [
+                  new Paragraph({
+                    children: [
+                      new TextRun({
+                        text: edu.details,
+                        size: 24,
+                      }),
+                    ],
+                  }),
+                ] : []),
+                new Paragraph({ children: [] }), // empty line
+              ]),
+            ] : []),
+            // Skills section
+            ...(formData.skills ? [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: 'SKILLS',
+                    bold: true,
+                    size: 28,
+                    underline: {},
+                    allCaps: true,
+                  }),
+                ],
+                spacing: { after: 120 },
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: formData.skills,
+                    size: 24,
+                  }),
+                ],
+                spacing: { after: 240 },
+              }),
+            ] : []),
+            // Experience section
+            ...(formData.experience && formData.experience.length > 0 ? [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: 'EXPERIENCE',
+                    bold: true,
+                    size: 28,
+                    underline: {},
+                    allCaps: true,
+                  }),
+                ],
+                spacing: { after: 120 },
+              }),
+              ...formData.experience.flatMap(exp => [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `${exp.jobTitle || ''} | ${exp.company || ''} (${exp.duration || ''})`,
+                      bold: true,
+                      size: 24,
+                    }),
+                  ],
+                }),
+                ...(exp.responsibilities && exp.responsibilities.length > 0 ? exp.responsibilities.map(res => new Paragraph({
+                  bullet: { level: 0 },
+                  children: [
+                    new TextRun({
+                      text: res,
+                      size: 24,
+                    }),
+                  ],
+                })) : []),
+                new Paragraph({ children: [] }), // empty line
+              ]),
+            ] : []),
+            // Projects section
+            ...(formData.projects && formData.projects.length > 0 ? [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: 'PROJECTS',
+                    bold: true,
+                    size: 28,
+                    underline: {},
+                    allCaps: true,
+                  }),
+                ],
+                spacing: { after: 120 },
+              }),
+              ...formData.projects.flatMap(proj => [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: proj.title || '',
+                      bold: true,
+                      size: 24,
+                    }),
+                  ],
+                }),
+                new Paragraph({
+                  bullet: { level: 0 },
+                  children: [
+                    new TextRun({
+                      text: proj.description || '',
+                      size: 24,
+                    }),
+                  ],
+                }),
+                new Paragraph({
+                  bullet: { level: 0 },
+                  children: [
+                    new TextRun({
+                      text: `Technologies: ${proj.technologies || ''}`,
+                      size: 24,
+                    }),
+                  ],
+                }),
+                ...(proj.link ? [
+                  new Paragraph({
+                    bullet: { level: 0 },
+                    children: [
+                      new TextRun({
+                        text: `Link: ${proj.link}`,
+                        size: 24,
+                      }),
+                    ],
+                  }),
+                ] : []),
+                new Paragraph({ children: [] }), // empty line
+              ]),
+            ] : []),
+            // Achievements section
+            ...(formData.achievements && formData.achievements.length > 0 ? [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: 'ACHIEVEMENTS',
+                    bold: true,
+                    size: 28,
+                    underline: {},
+                    allCaps: true,
+                  }),
+                ],
+                spacing: { after: 120 },
+              }),
+              ...formData.achievements.map(ach => new Paragraph({
+                bullet: { level: 0 },
+                children: [
+                  new TextRun({
+                    text: ach,
+                    size: 24,
+                  }),
+                ],
+              })),
+            ] : []),
+          ],
+        }],
+      });
+
+      const docxBuffer = await Packer.toBuffer(doc);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      res.setHeader('Content-Disposition', 'attachment; filename=resume.docx');
+      res.send(docxBuffer);
+    } else {
+      res.status(400).json({ error: 'Unsupported format' });
+    }
+  } catch (error) {
+    console.error(`Error in /api/download-resume for format ${format}:`, error);
+    res.status(500).json({ error: `Failed to generate ${format} resume` });
+  }
+});
 
 app.post('/api/download-html', async (req, res) => {
   const { formData, template } = req.body;

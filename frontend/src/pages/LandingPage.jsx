@@ -74,6 +74,11 @@ export default function LandingPage() {
               desc: "Choose from a variety of professionally designed templates across different categories to match your style.",
             },
             {
+              icon: <FileText className="w-8 h-8 text-teal-600" />,
+              title: "Resume Generation",
+              desc: "Instantly generate a professional, ATS-friendly resume from your portfolio data with just one click.",
+            },
+            {
               icon: <Zap className="w-8 h-8 text-yellow-600" />,
               title: "One-Click Deployment",
               desc: "Deploy your portfolio instantly to a live URL with our hosting service. No technical setup required.",

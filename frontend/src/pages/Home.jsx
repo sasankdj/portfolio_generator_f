@@ -116,6 +116,21 @@ export default function Home() {
                 Edit Details
               </button>
             </div>
+            {/* Option 3: Create Resume */}
+            <div className="flex items-center p-4 rounded-xl bg-teal-50 border-teal-200 border">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-4 bg-teal-500 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-teal-800">Create Your Resume</h4>
+                <p className="text-sm text-teal-600">Generate a professional resume from your profile.</p>
+              </div>
+              <button onClick={() => navigate('/form')} className="ml-auto px-4 py-2 bg-white rounded-lg font-semibold text-teal-600 shadow-sm hover:bg-teal-100 transition-colors text-sm">
+                Create Resume
+              </button>
+            </div>
           </div>
         </div>
 

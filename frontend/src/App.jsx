@@ -19,7 +19,8 @@ import PortfolioSuccess from './pages/PortfolioSuccess'
 import ProtectedRoute from './components/ProtectedRoute'
 import { Analytics } from '@vercel/analytics/react';
 import GlobalLoader from './components/GlobalLoader'
-
+import ResumeSuccess from './pages/ResumeSuccess'
+import ResumeTemplates from './pages/ResumeTemplates'
 const App = () => {
   return (
     <Router>
@@ -43,6 +44,8 @@ const App = () => {
           <Route path="/deployment" element={<Deployment />} />
           <Route path="/success" element={<PortfolioSuccess />} />
           <Route path="/feedback" element={<Feedback />} />
+           <Route path="/resume-templates" element={<ResumeTemplates />} />
+      <Route path="/resume-success" element={<ResumeSuccess />} />
         </Route>
       </Routes>
         <Analytics />
