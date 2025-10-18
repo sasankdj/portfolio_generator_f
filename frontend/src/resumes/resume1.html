@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Resume - Sasank Kota</title>
+<title>Resume - {{fullName}}</title>
 <style>
   @page { size: A4; margin: 15mm; }
-  body { font-family: Arial, sans-serif; font-size: 11px; color: #333; margin: 0; padding: 0; line-height: 1.4; }
+  body { font-family: Arial, sans-serif; font-size: 11px; color: #333; margin: 0; padding: 0; line-height: 1.4; max-width: 210mm; margin: 0 auto; }
   .header { text-align: center; margin-bottom: 8px; }
   h1 { font-size: 22px; margin: 0; font-weight: bold; color: #000; }
   h2 { font-size: 13px; margin-top: 8px; margin-bottom: 3px; border-bottom: 1px solid #000; padding-bottom: 2px; text-transform: uppercase; color: #000; }
@@ -17,6 +17,7 @@
   li { margin-bottom: 2px; }
   p { margin: 0 0 4px 0; }
   @media print { body { margin: 0; } }
+  @media screen { body { max-width: 210mm; margin: 0 auto; padding: 10mm; box-shadow: 0 0 10px rgba(0,0,0,0.1); } }
 </style>
 </head>
 <body>

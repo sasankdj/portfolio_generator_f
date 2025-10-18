@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Download, Eye, ArrowLeft, FileText, File, Loader } from 'lucide-react';
 import { usePortfolio } from '../components/PortfolioContext';
 import { toast } from 'react-toastify';
@@ -43,7 +42,7 @@ const ResumeSuccess = () => {
       printWindow.document.write('<script>window.onload = function() { window.print(); window.onafterprint = function() { window.close(); } };</script>');
       printWindow.document.close();
 
-    } catch (error) {
+    } catch {
       printWindow.close(); // Close the popup on error
       toast.error('Could not prepare PDF for printing.');
     } finally {
@@ -93,27 +92,39 @@ const ResumeSuccess = () => {
     }
   };
 
-  const handlePreview = () => {
+  const handlePreview = async () => {
     if (resumeUrl) {
       window.open(resumeUrl, '_blank');
     } else if (resumeHtml) {
       const blob = new Blob([resumeHtml], { type: 'text/html' });
       const blobUrl = URL.createObjectURL(blob);
       window.open(blobUrl, '_blank');
+    } else {
+      // Fetch the resume HTML if not available
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/generate-resume`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ formData: userDetails, template }),
+        });
+        if (!response.ok) throw new Error('Failed to generate resume for preview.');
+        const { html } = await response.json();
+        const blob = new Blob([html], { type: 'text/html' });
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+      } catch (error) {
+        console.error('Error generating resume for preview:', error);
+        toast.error('Could not load preview. Please try again.');
+      }
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-white p-10 rounded-2xl shadow-xl max-w-lg w-full text-center"
-      >
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring' }} className="mx-auto w-24 h-24 flex items-center justify-center bg-green-100 rounded-full">
+      <div className="bg-white p-10 rounded-2xl shadow-xl max-w-lg w-full text-center">
+        <div className="mx-auto w-24 h-24 flex items-center justify-center bg-green-100 rounded-full">
           <svg className="w-16 h-16 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-        </motion.div>
+        </div>
         <h1 className="text-3xl font-bold text-gray-800 mt-6 mb-2">Success!</h1>
         <p className="text-gray-600 mb-8">Your professional resume has been generated.</p>
 
@@ -129,11 +140,14 @@ const ResumeSuccess = () => {
           <button onClick={handlePreview} className="sm:col-span-2 flex items-center justify-center gap-2 px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
             <Eye size={20} /> Preview
           </button>
+          <button onClick={() => navigate('/resume-templates')} className="sm:col-span-2 flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+            🎨 Change Template
+          </button>
         </div>
         <button onClick={() => navigate('/home')} className="flex items-center justify-center gap-2 mt-8 text-sm text-gray-500 hover:text-gray-700">
           <ArrowLeft size={16} /> Back to Home
         </button>
-      </motion.div>
+      </div>
     </div>
   );
 };

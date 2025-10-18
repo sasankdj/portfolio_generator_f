@@ -35,9 +35,23 @@ export default function Home() {
           <h1 className="text-6xl md:text-7xl font-extrabold mb-6 tracking-tight drop-shadow-lg animate-slide-up">
             Welcome, {user?.name || 'User'}! <span className="inline-block animate-bounce">🚀</span>
           </h1>
-          <p className="text-2xl md:text-3xl font-light mb-12 max-w-3xl mx-auto opacity-90 leading-relaxed">
+          <p className="text-2xl md:text-3xl font-light mb-8 max-w-3xl mx-auto opacity-90 leading-relaxed">
             Ready to build your standout portfolio? Follow the steps below to get started.
           </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <button
+              onClick={() => navigate('/templates')}
+              className="px-8 py-4 bg-white text-indigo-700 font-bold rounded-lg shadow-lg hover:bg-gray-100 transition-transform transform hover:scale-105"
+            >
+              🌐 Create Portfolio Website
+            </button>
+            <button
+              onClick={() => navigate('/resume-templates')}
+              className="px-8 py-4 bg-white text-indigo-700 font-bold rounded-lg shadow-lg hover:bg-gray-100 transition-transform transform hover:scale-105"
+            >
+              📄 Create ATS Resume
+            </button>
+          </div>
         </div>
         <div className="absolute -top-12 -right-12 w-48 h-48 bg-white bg-opacity-10 rounded-full animate-pulse"></div>
         <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-white bg-opacity-10 rounded-full animate-pulse delay-1000"></div>

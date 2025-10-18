@@ -225,55 +225,76 @@ function Form() {
 
         <div className="mt-8 p-6 bg-white rounded-xl shadow-lg">
           <h2 className="text-2xl font-bold text-center mb-6">Actions</h2>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <button
-              className="flex-1 flex items-center justify-center px-4 py-3 text-white bg-gray-700 rounded-lg hover:bg-gray-800 transition"
-              onClick={handleSubmit}
-            >
-              💾 Save Details
-            </button>
-            <button
-              className="flex-1 flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
-              onClick={downloadHtmlFile}
-            >
-              📄 Download HTML
-            </button>
-            <button
-              className="flex-1 flex items-center justify-center px-4 py-3 text-white bg-red-500 rounded-lg hover:bg-red-600 transition"
-              onClick={downloadPdfFile}
-            >
-              📄 Download PDF
-            </button>
-            <button
-              className="flex-1 flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
-              onClick={downloadDocxFile}
-            >
-              📄 Download DOCX
-            </button>
-            <button
-              className="flex-1 flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
-              onClick={previewInNewTab}
-            >
-              👁️ Preview in New Tab
-            </button>
-            <button
-              className="flex-1 flex items-center justify-center px-4 py-3 text-white bg-green-500 rounded-lg hover:bg-green-600 transition"
-              onClick={createAndNavigate}
-            >
-              ✨ Create Portfolio
-            </button>
-            <button
-              className="flex-1 flex items-center justify-center px-4 py-3 text-white bg-purple-500 rounded-lg hover:bg-purple-600 transition"
-              onClick={() => navigate('/templates')}
-            >
-              🎨 Change Template
-            </button>
-            <button
-              className="flex-1 flex items-center justify-center px-4 py-3 text-white bg-teal-500 rounded-lg hover:bg-teal-600 transition"
-              onClick={() => navigate('/resume-templates')}
-            >
-              📄 Create Resume
-            </button>
+
+          {/* Common Actions */}
+          <div className="mb-6 p-4 border rounded-lg bg-gray-50">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">Common Actions</h3>
+            <div className="flex flex-wrap gap-4 justify-center">
+              <button
+                className="flex items-center justify-center px-4 py-3 text-white bg-gray-700 rounded-lg hover:bg-gray-800 transition"
+                onClick={handleSubmit}
+              >
+                💾 Save Details
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Portfolio Website Section */}
+            <div className="p-4 border rounded-lg bg-blue-50">
+              <h3 className="text-lg font-semibold text-blue-800 mb-4 text-center">Portfolio Website</h3>
+              <div className="space-y-3">
+                <button
+                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
+                  onClick={downloadHtmlFile}
+                >
+                  📄 Download HTML
+                </button>
+                <button
+                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
+                  onClick={previewInNewTab}
+                >
+                  👁️ Preview in New Tab
+                </button>
+                <button
+                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-green-500 rounded-lg hover:bg-green-600 transition"
+                  onClick={createAndNavigate}
+                >
+                  ✨ Create Portfolio
+                </button>
+                <button
+                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-purple-500 rounded-lg hover:bg-purple-600 transition"
+                  onClick={() => navigate('/templates')}
+                >
+                  🎨 Change Template
+                </button>
+              </div>
+            </div>
+
+            {/* Resume Section */}
+            <div className="p-4 border rounded-lg bg-green-50">
+              <h3 className="text-lg font-semibold text-green-800 mb-4 text-center">ATS Resume</h3>
+              <div className="space-y-3">
+                <button
+                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-red-500 rounded-lg hover:bg-red-600 transition"
+                  onClick={downloadPdfFile}
+                >
+                  📄 Download PDF
+                </button>
+                <button
+                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
+                  onClick={downloadDocxFile}
+                >
+                  📄 Download DOCX
+                </button>
+                <button
+                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-teal-500 rounded-lg hover:bg-teal-600 transition"
+                  onClick={() => navigate('/resume-templates')}
+                >
+                  📄 Create Resume
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div><Chatbot />
