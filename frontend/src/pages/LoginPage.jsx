@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../components/AuthContext";
 import { useGoogleLogin } from "@react-oauth/google";
 import { usePortfolio } from "../components/PortfolioContext";
@@ -18,6 +18,7 @@ const LoginPage = () => {
   const { login, isLoggedIn } = useAuth();
   const { fetchUserDetails } = usePortfolio();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -29,33 +30,42 @@ const LoginPage = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
 
-    if (code) {
+    const handleGitHubCallback = async (authCode) => {
       setLoading(true);
-      fetch(`${API_BASE_URL}/api/auth/github`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ code }),
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.token) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/github`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ code: authCode }),
+        });
+        const data = await response.json();
+        if (response.ok && data.token) {
           const userData = { name: data.name, email: data.email, token: data.token, id: data.id };
           login(userData);
-          fetchUserDetails(userData.token);
-          navigate('/home', { replace: true });
+          if (location.state?.action === 'createPortfolio') {
+            toast.success("Logged in! Now generating your portfolio...");
+            navigate('/form', { state: { from: '/login', action: 'createPortfolio' }, replace: true });
+          } else {
+            fetchUserDetails(userData);
+            navigate('/home', { replace: true });
+          }
         } else {
           throw new Error(data.msg || 'GitHub login failed.');
         }
-      })
-      .catch(error => {
+      } catch (error) {
         console.error('GitHub auth error:', error);
         setAuthError(error.message);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    if (code) {
+      handleGitHubCallback(code);
     }
-  }, [navigate, login, fetchUserDetails]);
+  }, []); // Intentionally empty to run only once on mount for the code check
 
   const handleSubmit = async (e) => {
      e.preventDefault();
@@ -76,8 +86,15 @@ const LoginPage = () => {
       if (response.ok) {
         const userData = { name: data.name, email: data.email, token: data.token, id: data.id };
         login(userData);
-        await fetchUserDetails(userData.token);
-        navigate('/home');
+
+        // Check if we need to perform a post-login action
+        if (location.state?.action === 'createPortfolio') {
+          toast.success("Logged in! Now generating your portfolio...");
+          navigate('/form', { state: { from: '/login', action: 'createPortfolio' }, replace: true });
+        } else {
+          await fetchUserDetails(userData);
+          navigate('/home');
+        }
       } else {
         setAuthError(data.msg || 'Login failed. Please check your credentials.');
       }
@@ -91,7 +108,6 @@ const LoginPage = () => {
   };
 
   const handleGoogleSignIn = useGoogleLogin({
-    flow: 'auth-code', // Important: We want an authorization code to send to the backend
     onSuccess: async (tokenResponse) => {
       setLoading(true);
       setAuthError(null);
@@ -101,14 +117,23 @@ const LoginPage = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ code: tokenResponse.code }),
+          body: JSON.stringify({ token: tokenResponse.access_token }),
         });
         const data = await response.json();
         if (response.ok) {
           const userData = { name: data.name, email: data.email, token: data.token, id: data.id };
           login(userData);
-          await fetchUserDetails(userData.token);
-          navigate('/home');
+          // After login, save the details that were in the form
+          await saveUserDetails({ ...userDetails, email: data.email, name: data.name });
+
+          // Check if we need to perform a post-login action
+          if (location.state?.action === 'createPortfolio') {
+            toast.success("Logged in! Now generating your portfolio...");
+            navigate('/form', { state: { from: '/login', action: 'createPortfolio' }, replace: true });
+          } else {
+            await fetchUserDetails(userData);
+            navigate('/home');
+          }
         } else {
           setAuthError(data.msg || 'Google Sign-In failed.');
         }

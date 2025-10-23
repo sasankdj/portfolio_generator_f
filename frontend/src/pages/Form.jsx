@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useNavigation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { usePortfolio } from "../components/PortfolioContext";
+import { useAuth } from "../components/AuthContext";
 import FormInputs from "../components/FormInputs";
 import JSZip from 'jszip';
 import Footer from "../components/Footer";
@@ -11,9 +12,10 @@ const API_BASE_URL = import.meta.env.VITE_API_URL;
 function Form() {
   const { state } = useLocation();
   const { userDetails, updateUserDetails, uploadResume, loading, saveUserDetails } = usePortfolio();
+  const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
-  const selectedTemplateId = state?.selectedTemplate || 'classic';
+  const selectedTemplateId = state?.selectedTemplate || userDetails.template || 'classic';
 
   const [formData, setFormData] = useState(userDetails);
 
@@ -24,15 +26,25 @@ function Form() {
     }));
   }, [userDetails]);
 
+  useEffect(() => {
+    // This effect runs when the component mounts or `state` changes.
+    // If we just came from signup/login with the intent to create, do it now.
+    if (isLoggedIn && state?.from && (state.from === '/signup' || state.from === '/login') && state.action === 'createPortfolio') {
+      createAndNavigate();
+    }
+  }, [isLoggedIn, state]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    updateUserDetails(formData);
+    const updatedFormData = { ...formData, template: selectedTemplateId };
+    updateUserDetails(updatedFormData);
     // Also save to the database
-    await saveUserDetails(formData);
+    await saveUserDetails(updatedFormData);
   };
 
   const previewInNewTab = async () => {
-    updateUserDetails(formData); // Update context before action
+    const updatedFormData = { ...formData, template: selectedTemplateId };
+    updateUserDetails(updatedFormData); // Update context before action
     try {
       const response = await fetch(`${API_BASE_URL}/generate-portfolio`, {
         method: 'POST',
@@ -40,7 +52,7 @@ function Form() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          formData,
+          formData: updatedFormData,
           template: selectedTemplateId,
         }),
       });
@@ -61,8 +73,17 @@ function Form() {
   };
 
   const createAndNavigate = async () => {
-    updateUserDetails(formData); // Update context before action
-    await saveUserDetails(formData); // Save details to backend
+    const updatedFormData = { ...formData, template: selectedTemplateId };
+    updateUserDetails(updatedFormData); // Update context before action
+
+    if (!isLoggedIn) {
+      // If user is not logged in, redirect to signup and pass the intent
+      toast.info("Please create an account to save and generate your portfolio.");
+      navigate('/signup', { state: { from: '/form', action: 'createPortfolio' } });
+      return;
+    }
+
+    await saveUserDetails(updatedFormData); // Save details to backend
     try {
       const response = await fetch(`${API_BASE_URL}/generate-portfolio`, {
         method: 'POST',
@@ -70,7 +91,7 @@ function Form() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          formData,
+          formData: updatedFormData,
           template: selectedTemplateId,
         }),
       });
@@ -92,8 +113,9 @@ function Form() {
   };
 
   const downloadHtmlFile = async () => {
-  updateUserDetails(formData); // Update context before action
-  await saveUserDetails(formData); // Save details to backend
+  const updatedFormData = { ...formData, template: selectedTemplateId };
+  updateUserDetails(updatedFormData); // Update context before action
+  await saveUserDetails(updatedFormData); // Save details to backend
   try {
     const response = await fetch(`${API_BASE_URL}/generate-portfolio`, {
       method: 'POST',
@@ -101,7 +123,7 @@ function Form() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        formData,
+        formData: updatedFormData,
         template: selectedTemplateId,
       }),
     });

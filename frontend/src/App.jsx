@@ -21,6 +21,9 @@ import { Analytics } from '@vercel/analytics/react';
 import GlobalLoader from './components/GlobalLoader'
 import ResumeSuccess from './pages/ResumeSuccess'
 import ResumeTemplates from './pages/ResumeTemplates'
+import NotLoggedInHomePage from './pages/NotLoggedInHomePage'
+import NetlifyCallback from './pages/NetlifyCallback'
+import VercelCallback from './pages/VercelCallback'
 const App = () => {
   return (
     <Router>
@@ -33,14 +36,18 @@ const App = () => {
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/not-logged-in-home" element={<NotLoggedInHomePage />} />
+        <Route path="/form" element={<Form />} />
+        <Route path="/templates" element={<Templates />} />
+
+        {/* Auth Callbacks */}
+        <Route path="/auth/netlify/callback" element={<NetlifyCallback />} />
+        <Route path="/auth/vercel/callback" element={<VercelCallback />} />
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<Home />} />
-          <Route path="/form" element={<Form />} />
           <Route path="/upload" element={<Form />} />
-
-          <Route path="/templates" element={<Templates />} />
           <Route path="/deployment" element={<Deployment />} />
           <Route path="/success" element={<PortfolioSuccess />} />
           <Route path="/feedback" element={<Feedback />} />

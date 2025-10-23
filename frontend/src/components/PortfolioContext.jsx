@@ -25,7 +25,8 @@ export const PortfolioProvider = ({ children }) => {
     projects: [{ title: '', description: '', link: '' }, { title: '', description: '', link: '' }],
     experience: [{ company: '', jobTitle: '', duration: '', responsibilities: [] }],
     achievements: [{ quote: '' }],
-    education: [{ university: '', degree: '', duration: '', details: '' }]
+    education: [{ university: '', degree: '', duration: '', details: '' }],
+    template: 'classic'
   });
 
   const [resume, setResume] = useState(null);
@@ -44,7 +45,8 @@ export const PortfolioProvider = ({ children }) => {
     setUserDetails(details);
   };
 
-  const fetchUserDetails = async (token) => {
+  const fetchUserDetails = async (userData) => {
+    const token = userData?.token;
     if (!token) return;
     setLoading(true);
     try {
@@ -202,6 +204,8 @@ export const PortfolioProvider = ({ children }) => {
 
       const zip = new JSZip();
       zip.file('index.html', data.html);
+      // Add _headers file to ensure correct Content-Type
+      zip.file('_headers', '/index.html\n  Content-Type: text/html\n');
 
       zip.generateAsync({ type: 'blob' }).then(function (content) {
         const a = document.createElement('a');
@@ -240,7 +244,8 @@ export const PortfolioProvider = ({ children }) => {
       githubUsername,
       netlifyUsername,
       connectGithub,
-      connectNetlify,      downloadPortfolioHtml,
+      connectNetlify,
+      downloadPortfolioHtml,
       fetchUserDetails, // Add this
       saveUserDetails,
     }}>

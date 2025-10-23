@@ -40,7 +40,7 @@ export default function LandingPage() {
           whileHover={{ scale: 1.05, boxShadow: "0 10px 25px rgba(0,0,0,0.2)" }}
           whileTap={{ scale: 0.95 }}
           className="mt-8 px-8 py-4 rounded-full shadow-lg bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold text-lg flex items-center gap-3 hover:from-purple-600 hover:to-blue-600 transition-all duration-300"
-          onClick={() => navigate('/signup')}
+          onClick={() => navigate('/not-logged-in-home')}
         >
           GET STARTED <Rocket className="w-5 h-5" />
         </motion.button>

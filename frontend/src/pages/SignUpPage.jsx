@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../components/AuthContext";
 import { useGoogleLogin } from "@react-oauth/google";
 import { usePortfolio } from "../components/PortfolioContext";
@@ -13,6 +13,7 @@ const SignUpPage = () => {
   // Add state for the new 'name' field
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,6 +21,7 @@ const SignUpPage = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, isLoggedIn } = useAuth();
   const { fetchUserDetails } = usePortfolio();
 
@@ -68,15 +70,22 @@ const SignUpPage = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ name, email, password }),
+          body: JSON.stringify({ name, email, phone, password }),
         });
 
           const data = await response.json();
           if (response.ok) {
-            const userData = { name: data.name, email, token: data.token, id: data.id };
+            const userData = { name: data.name, email: data.email, token: data.token, id: data.id };
             login(userData);
-            await fetchUserDetails(userData.token); // This will just initialize an empty state
-            navigate("/home");
+
+            // Check if we need to perform a post-login action
+            if (location.state?.action === 'createPortfolio') {
+              toast.success("Account created! Now generating your portfolio...");
+              navigate('/form', { state: { from: '/signup', action: 'createPortfolio' }, replace: true });
+            } else {
+              await fetchUserDetails(userData); // This will just initialize an empty state
+              navigate("/home");
+            }
           } else {
             if (response.status === 400 && data.msg === 'User already exists') {
               setErrors({ general: 'User with this email already exists. Please login.' });
@@ -95,7 +104,6 @@ const SignUpPage = () => {
   };
 
   const handleGoogleSignIn = useGoogleLogin({
-    flow: 'auth-code', // Use authorization code flow
     onSuccess: async (tokenResponse) => {
       setLoading(true);
       setErrors({});
@@ -105,14 +113,21 @@ const SignUpPage = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ code: tokenResponse.code }),
+          body: JSON.stringify({ token: tokenResponse.access_token }),
         });
         const data = await response.json();
         if (response.ok) {
           const userData = { name: data.name, email: data.email, token: data.token, id: data.id };
           login(userData);
-          await fetchUserDetails(userData.token);
-          navigate('/home');
+          // Check if we need to perform a post-login action
+          if (location.state?.action === 'createPortfolio') {
+            toast.success("Account created! Now generating your portfolio...");
+            navigate('/form', { state: { from: '/signup', action: 'createPortfolio' }, replace: true });
+          } else {
+            await fetchUserDetails(userData);
+            navigate('/home');
+          }
+
         } else {
           setErrors({ general: data.msg || 'Google Sign-Up failed.' });
         }
@@ -191,6 +206,28 @@ const SignUpPage = () => {
             />
             {errors.email && (
               <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+            )}
+          </div>
+
+          <div>
+            <label
+              htmlFor="phone"
+              className="block text-sm font-medium text-gray-700 text-left"
+            >
+              Phone (Optional)
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              placeholder="Enter your phone number"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className={`mt-1 block w-full px-4 py-2.5 border rounded-lg shadow-sm bg-white/50 placeholder:text-gray-500/90 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.phone ? 'border-red-500' : 'border-gray-300'
+              }`}
+            />
+            {errors.phone && (
+              <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
             )}
           </div>
 

@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
+import crypto from 'crypto';
 import mammoth from 'mammoth';
 import dotenv from "dotenv";
 import fetch from "node-fetch";
@@ -16,10 +17,13 @@ import puppeteer from 'puppeteer-core';
 import HTMLToDOCX from 'html-to-docx';
 import { Document, Packer, Paragraph, TextRun } from 'docx';
 import jwt from 'jsonwebtoken';
+
 import bcrypt from 'bcryptjs';
 
 import User from './models/User.js';
 import Portfolio from './models/Portfolio.js';
+import netlifyAuthRoutes from './routes/netlifyAuth.js';
+import deployRoutes from './routes/deploy.js';
 
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
@@ -28,16 +32,15 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 3001; // Use environment variable for port
-
+app.use(cors({
+  origin: 'http://localhost:5173', // Allow requests from your frontend
+  credentials: true
+}));
 // Increase the server timeout to 5 minutes (300,000 ms) to handle long AI requests
 app.timeout = 300000;
 
-const oAuth2Client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET);
-
-// --- Database Connection ---
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected successfully.'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// Multer configuration
+const upload = multer({ storage: multer.memoryStorage() });
 
 // --- Auth Middleware ---
 const protect = async (req, res, next) => {
@@ -51,11 +54,24 @@ const protect = async (req, res, next) => {
       // Get token from header (e.g., "Bearer <token>")
       token = req.headers.authorization.split(' ')[1];
 
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // Validate token before verification
+      if (!token || typeof token !== 'string' || token.trim() === '' || token === 'null' || token === 'undefined') {
+        return res.status(401).json({ msg: 'Not authorized, no token' });
+      }
 
-      // Get user from the token payload and attach to request object
-      // We exclude the password from being attached to the req object
+      token = token.trim();
+
+      // Verify token
+      let decoded;
+      try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+      } catch (jwtError) {
+        console.error('JWT verification failed:', jwtError.message);
+        return res.status(401).json({ msg: 'Not authorized, token failed' });
+      }
+
+      // Get user from the token payload (which is { user: { id: ... } })
+      // and attach to request object, excluding the password.
       req.user = await User.findById(decoded.user.id).select('-password');
 
       if (!req.user) {
@@ -67,20 +83,98 @@ const protect = async (req, res, next) => {
       console.error('Token verification failed:', error.message);
       res.status(401).json({ msg: 'Not authorized, token failed' });
     }
-  }
-
-  if (!token) {
+  } else {
     res.status(401).json({ msg: 'Not authorized, no token' });
   }
 };
+
+app.post('/api/deploy/netlify', protect, upload.single('zipFile'), async (req, res) => {
+  // Check if user has connected their Netlify account
+  const user = await User.findById(req.user.id);
+  if (!user.netlifyToken) {
+    return res.status(400).json({ error: 'Please connect your Netlify account first.' });
+  }
+
+  if (!req.file) {
+    return res.status(400).json({ error: 'ZIP file is required for deployment.' });
+  }
+
+  try {
+    const zipBuffer = req.file.buffer;
+    let siteId = user.netlifySiteId;
+    let siteUrl;
+
+    // If user doesn't have a site ID, create a new site
+    if (!siteId) {
+      const createSiteResponse = await fetch('https://api.netlify.com/api/v1/sites', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${user.netlifyToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}), // Create a site with a random name
+      });
+
+      if (!createSiteResponse.ok) {
+        const errorData = await createSiteResponse.json();
+        throw new Error(`Failed to create Netlify site: ${errorData.message || createSiteResponse.statusText}`);
+      }
+
+      const siteData = await createSiteResponse.json();
+      siteId = siteData.id;
+      siteUrl = siteData.ssl_url || siteData.url;
+
+    // Save the new site ID to the user's record
+    user.netlifySiteId = siteId;
+    if (!user.name) {
+      user.name = 'Unknown User';
+    }
+    await user.save();
+    }
+
+    // Deploy the ZIP file to the site (either new or existing)
+    const deployResponse = await fetch(`https://api.netlify.com/api/v1/sites/${siteId}/deploys`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${user.netlifyToken}`,
+        'Content-Type': 'application/zip',
+      },
+      body: zipBuffer,
+    });
+
+    if (!deployResponse.ok) {
+      const errorData = await deployResponse.json();
+      throw new Error(`Failed to deploy to Netlify: ${errorData.message || deployResponse.statusText}`);
+    }
+
+    const deployData = await deployResponse.json();
+
+    // If we created a new site, we already have the URL.
+    // If we deployed to an existing site, the deploy response contains the URL.
+    res.json({ url: siteUrl || deployData.ssl_url || deployData.url });
+
+  } catch (error) {
+    console.error('Netlify deployment process failed:', error);
+    res.status(500).json({ error: error.message || 'An error occurred during deployment.' });
+  }
+});
+
+const oAuth2Client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET);
+
+// --- Database Connection ---
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB connected successfully.'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
 // Middleware
-app.use(cors()); // Allow requests from your frontend
+
 app.use(express.json({ limit: '50mb' }));
 app.use('/generated', express.static(path.join(__dirname, 'generated')));
 
-// Set up multer for in-memory file storage
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+app.use('/auth', netlifyAuthRoutes);
+app.use('/api', deployRoutes);
+
+// Set up multer for in-memory file storage (removed duplicate)
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY, // get key from .env
@@ -88,7 +182,7 @@ const ai = new GoogleGenAI({
 
 // --- Authentication Routes ---
 app.post('/api/auth/signup', async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, phone } = req.body; // Added phone
 
   try {
     let user = await User.findOne({ email });
@@ -100,13 +194,18 @@ app.post('/api/auth/signup', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    user = new User({ name, email, password: hashedPassword });
+    user = new User({
+      name: name, // Explicitly use the name from the request
+      email: email,
+      password: hashedPassword,
+      phone: phone // Added phone
+    });
     await user.save();
 
     const payload = { user: { id: user.id } };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    res.json({ token, id: user.id, name: user.name, email: user.email });
+    res.json({ token, id: user.id, name: user.name, email: user.email, phone: user.phone });
   } catch (err) {
     console.error('Signup Error:', err);
     res.status(500).json({ msg: 'Server error', error: err.message });
@@ -117,21 +216,27 @@ app.post('/api/auth/signup', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   try {
-    const user = await User.findOne({ email });
+    let user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ msg: 'User not found. Please sign up before logging in.' });
     }
 
+    // If the user has a googleId or githubId, they should use social login.
+    if (user.googleId || user.githubId) {
+      return res.status(400).json({ msg: 'This account was created using a social provider. Please log in with Google or GitHub.' });
+    }
+
+    // For standard email/password users, directly compare the password.
+    // The password in the DB is always expected to be hashed for these users.
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
       return res.status(400).json({ msg: 'Invalid credentials. Please try again.' });
     }
 
     const payload = { user: { id: user.id } };
-    jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' }, (err, token) => {
-      if (err) throw err;
-      res.json({ token, name: user.name, email: user.email, id: user.id });
-    });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' });
+    res.json({ token, name: user.name, email: user.email, id: user.id, phone: user.phone });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -139,44 +244,33 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 app.post('/api/auth/google', async (req, res) => {
-  const { code } = req.body;
+  const { token } = req.body;
   try {
-    // Exchange authorization code for tokens
-    const { tokens } = await oAuth2Client.getToken({
-      code,
-      redirect_uri: 'postmessage'
-    });
-    const idToken = tokens.id_token;
+    // Set the access token
+    oAuth2Client.setCredentials({ access_token: token });
 
-    if (!idToken) {
-      return res.status(400).json({ msg: 'Google sign-in failed, no ID token received.' });
-    }
+    // Get user info using the access token
+    const userInfo = await oAuth2Client.request({ url: 'https://www.googleapis.com/oauth2/v2/userinfo' });
+    const { email, name, id: googleId } = userInfo.data;
 
-    // Verify the ID token
-    const ticket = await oAuth2Client.verifyIdToken({
-      idToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-
-    if (!payload || !payload.email) {
+    if (!email) {
       return res.status(400).json({ msg: 'Could not extract user information from Google token.' });
     }
-
-    const { email, name, sub: googleId } = payload;
 
     // Find or create user
     let user = await User.findOne({ email });
     if (!user) {
       // Create a new user if they don't exist
-      user = new User({ email, name, googleId, password: `google_${googleId}` }); // Create a dummy password for Google users
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(`google_${googleId}`, salt); // Hash the dummy password
+      user = new User({ email, name, googleId, password: hashedPassword });
       await user.save();
     }
 
     // Create and return JWT
     const jwtPayload = { user: { id: user.id } };
-    const token = jwt.sign(jwtPayload, process.env.JWT_SECRET, { expiresIn: '5h' });
-    res.json({ token, id: user.id, name: user.name, email: user.email });
+    const jwtToken = jwt.sign(jwtPayload, process.env.JWT_SECRET, { expiresIn: '5h' });
+    res.json({ token: jwtToken, id: user.id, name: user.name, email: user.email, phone: user.phone });
   } catch (err) {
     console.error('Google auth error:', err.message);
     res.status(500).send('Server error during Google authentication');
@@ -227,11 +321,13 @@ app.post('/api/auth/github', async (req, res) => {
     let user = await User.findOne({ email: userEmail });
     if (!user) {
       // Create a new user if they don't exist
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(`github_${githubId}`, salt); // Hash the dummy password
       user = new User({
         name: name || githubLogin,
         email: userEmail,
         githubId,
-        password: `github_${githubId}`, // Create a dummy password
+        password: hashedPassword,
       });
       await user.save();
     }
@@ -239,10 +335,137 @@ app.post('/api/auth/github', async (req, res) => {
     // 4. Create and return JWT
     const jwtPayload = { user: { id: user.id } };
     const token = jwt.sign(jwtPayload, process.env.JWT_SECRET, { expiresIn: '5h' });
-    res.json({ token, id: user.id, name: user.name, email: user.email });
+    res.json({ token, id: user.id, name: user.name, email: user.email, phone: user.phone });
   } catch (err) {
     console.error('GitHub auth error:', err.message);
     res.status(500).send('Server error during GitHub authentication');
+  }
+});
+
+// --- Vercel OAuth Routes ---
+app.get('/api/auth/vercel/init', protect, (req, res) => {
+  const clientId = process.env.VERCEL_CLIENT_ID;
+  const redirectUri = encodeURIComponent(`${process.env.FRONTEND_URL}/auth/vercel/callback`);
+  const scope = 'read,read:user,read:teams,write:deployments';
+  const state = req.user.id; // Use user ID as state for security
+
+  const authUrl = `https://vercel.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&state=${state}&response_type=code`;
+
+  res.json({ authUrl });
+});
+
+app.get('/api/auth/connections', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    res.json({
+      isVercelConnected: !!user.vercelToken,
+      isNetlifyConnected: !!user.netlifyToken,
+    });
+  } catch (err) {
+    res.status(500).json({ msg: 'Server error checking connections' });
+  }
+});
+
+// --- Netlify OAuth Routes ---
+app.get('/api/auth/netlify/init', protect, (req, res) => {
+  const clientId = process.env.NETLIFY_CLIENT_ID;
+  const redirectUri = encodeURIComponent(`${process.env.FRONTEND_URL}/auth/netlify/callback`);
+  const state = req.user.id; // Use user ID as state for security
+
+  // const authUrl = `https://app.netlify.com/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=all&state=${state}&response_type=code`;
+const authUrl = `https://app.netlify.com/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&response_type=code`;
+
+  res.json({ authUrl });
+});
+
+app.post('/api/auth/netlify/callback', protect, async (req, res) => {
+  const { code, state } = req.body;
+
+  if (!code || !state) {
+    return res.status(400).json({ msg: 'Missing code or state parameter.' });
+  }
+
+  if (state !== req.user.id) {
+    return res.status(400).json({ msg: 'Invalid state parameter.' });
+  }
+
+  try {
+    // Exchange code for access token
+    const tokenResponse = await fetch('https://api.netlify.com/oauth/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: process.env.NETLIFY_CLIENT_ID,
+        client_secret: process.env.NETLIFY_CLIENT_SECRET,
+        code,
+        redirect_uri: `${process.env.FRONTEND_URL}/auth/netlify/callback`,
+        grant_type: 'authorization_code',
+      }),
+    });
+
+    const tokenData = await tokenResponse.json();
+    if (tokenData.error) {
+      throw new Error(tokenData.error_description || 'Failed to get Netlify access token.');
+    }
+
+    const { access_token } = tokenData;
+
+    // Update user with Netlify token
+    await User.findByIdAndUpdate(req.user.id, {
+      netlifyToken: access_token,
+    });
+
+    res.json({ msg: 'Netlify account connected successfully.' });
+  } catch (err) {
+    console.error('Netlify auth error:', err.message);
+    res.status(500).json({ msg: 'Server error during Netlify authentication' });
+  }
+});
+app.post('/api/auth/vercel/callback', protect, async (req, res) => {
+  const { code, state } = req.body;
+
+  if (!code || !state) {
+    return res.status(400).json({ msg: 'Missing code or state parameter.' });
+  }
+
+  if (state !== req.user.id) {
+    return res.status(400).json({ msg: 'Invalid state parameter.' });
+  }
+
+  try {
+    // Exchange code for access token
+    const tokenResponse = await fetch('https://api.vercel.com/v2/oauth/access_token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: process.env.VERCEL_CLIENT_ID,
+        client_secret: process.env.VERCEL_CLIENT_SECRET,
+        code,
+        redirect_uri: `${process.env.FRONTEND_URL}/auth/vercel/callback`,
+      }),
+    });
+
+    const tokenData = await tokenResponse.json();
+    if (tokenData.error) {
+      throw new Error(tokenData.error_description || 'Failed to get Vercel access token.');
+    }
+
+    const { access_token, refresh_token } = tokenData;
+
+    // Update user with Vercel tokens
+    await User.findByIdAndUpdate(req.user.id, {
+      vercelToken: access_token,
+      vercelRefreshToken: refresh_token,
+    });
+
+    res.json({ msg: 'Vercel account connected successfully.' });
+  } catch (err) {
+    console.error('Vercel auth error:', err.message);
+    res.status(500).json({ msg: 'Server error during Vercel authentication' });
   }
 });
 
@@ -1145,6 +1368,7 @@ app.post('/api/download-resume', async (req, res) => {
   }
 });
 
+
 app.post('/api/download-html', async (req, res) => {
   const { formData, template } = req.body;
 
@@ -1255,6 +1479,90 @@ app.post('/api/download-html', async (req, res) => {
     res.status(500).send('Error generating portfolio for download');
   }
 });
+
+/**
+ * Generates portfolio HTML from form data and a template.
+ * @param {object} formData The user's portfolio data.
+ * @param {string} template The name of the template (e.g., 'classic').
+ * @returns {Promise<string>} The generated HTML string.
+ */
+async function generatePortfolioHtml(formData, template) {
+  const templateMap = {
+    classic: 'ClassicTheme',
+    dark: 'DarkTheme',
+    minimal: 'MinimalistTheme',
+    creative: 'CreativeTheme',
+  };
+
+  const sanitizedTemplate = path.normalize(template).replace(/^(\.\.[/\\])+/, '');
+  const templateFileName = templateMap[sanitizedTemplate];
+
+  if (!templateFileName) {
+    throw new Error('Invalid template specified.');
+  }
+
+  const templatePath = path.join(__dirname, '..', 'frontend', 'src', 'templates', `${templateFileName}.html`);
+  let generatedHtml = await fs.readFile(templatePath, 'utf8');
+
+  // --- Replace placeholders ---
+  generatedHtml = generatedHtml.replace(/{{fullName}}/g, formData.fullName || '');
+  generatedHtml = generatedHtml.replace(/{{headline}}/g, formData.headline || '');
+  generatedHtml = generatedHtml.replace(/{{email}}/g, formData.email || '');
+  generatedHtml = generatedHtml.replace(/{{github}}/g, formData.github || '');
+  generatedHtml = generatedHtml.replace(/{{careerObjective}}/g, formData.careerObjective || '');
+  generatedHtml = generatedHtml.replace(/{{avatarUrl}}/g, formData.image || 'https://imgcdn.stablediffusionweb.com/2024/11/1/b51f49a9-82a1-4659-905d-c8cd8643bade.jpg');
+
+  // Skills
+  if (formData.skills) {
+    let skillsHtml = '';
+    const skillsList = Array.isArray(formData.skills) ? formData.skills : formData.skills.split(',');
+    if (template === 'classic') {
+      skillsHtml = skillsList.map(skill => `<span class="px-4 py-2 bg-indigo-100 text-indigo-800 rounded-full">${skill.trim()}</span>`).join('\n');
+    } else if (template === 'dark') {
+      skillsHtml = skillsList.map(skill => `<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">${skill.trim()}</span>`).join('\n');
+    } else if (template === 'minimal') {
+      skillsHtml = skillsList.map(skill => `<span class="skill">${skill.trim()}</span>`).join('\n');
+    } else if (template === 'creative') {
+      skillsHtml = skillsList.map(skill => `<span class="px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-sm font-medium">${skill.trim()}</span>`).join('\n');
+    }
+    generatedHtml = generatedHtml.replace('<!-- SKILLS -->', skillsHtml);
+  }
+
+  // Projects
+  if (formData.projects && formData.projects.length > 0) {
+    let projectsHtml = '';
+    if (template === 'classic') {
+      projectsHtml = formData.projects.map(project => `
+        <div class="project-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300">
+          <div class="p-6">
+            <h3 class="text-2xl font-semibold text-gray-800 mb-2">${project.title}</h3>
+            <p class="text-gray-600 mb-4">${project.description}</p>
+            <div class="mb-4">
+              <h4 class="font-medium text-gray-800 mb-2">Technologies:</h4>
+              <div class="flex flex-wrap gap-2">
+                ${(project.technologies || '').split(',').map(tech => `<span class="px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded">${tech.trim()}</span>`).join('')}
+              </div>
+            </div>
+            <a href="${project.link || '#'}" class="text-indigo-600 font-medium hover:underline inline-flex items-center">
+              View Project
+              <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+          </div>
+        </div>
+      `).join('\n');
+    }
+    // ... (add other template logic here for brevity)
+    generatedHtml = generatedHtml.replace('<!-- PROJECTS -->', projectsHtml);
+  }
+
+  // Achievements
+  if (formData.achievements && formData.achievements.length > 0) {
+    const achievementsHtml = formData.achievements.filter(a => a.quote).map(achievement => `<div class="testimonial-card"><p>"${achievement.quote}"</p></div>`).join('\n');
+    generatedHtml = generatedHtml.replace('<!-- TESTIMONIALS -->', achievementsHtml);
+  }
+
+  return generatedHtml;
+}
 
 app.listen(port, () => {
   console.log(`Backend server listening at http://localhost:${port}`);
