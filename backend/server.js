@@ -33,7 +33,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3001; // Use environment variable for port
 app.use(cors({
-  origin: 'http://localhost:5173', // Allow requests from your frontend
+  origin: process.env.FRONTEND_URL, // Allow requests from your frontend
   credentials: true
 }));
 // Increase the server timeout to 5 minutes (300,000 ms) to handle long AI requests
