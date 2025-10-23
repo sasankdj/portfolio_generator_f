@@ -34,10 +34,7 @@ const app = express();
 const port = process.env.PORT || 3001; // Use environment variable for port
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173", // for local dev
-      "https://portfolio-generator-f.vercel.app", // your frontend domain
-    ],
+    origin: true,
     credentials: true,
   })
 );
