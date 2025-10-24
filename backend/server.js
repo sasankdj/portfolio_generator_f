@@ -33,17 +33,18 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3001; // Use environment variable for port
 const allowedOrigins = [
-  "https://portfolio-generator-f.vercel.app",  // your frontend
-  "http://localhost:5173",                     // local dev (Vite)
-  "http://localhost:3000"                      // optional if using React default
+  "https://portfolio-generator-f.vercel.app", // production frontend
+  "http://localhost:5173",                    // dev (Vite)
+  "http://localhost:3000"                     // optional React default
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
         callback(null, true);
       } else {
+        console.warn(`🚫 Blocked by CORS: ${origin}`);
         callback(new Error("Not allowed by CORS"));
       }
     },
@@ -52,6 +53,15 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// ✅ this line is essential for Vercel
+app.options("*", (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.sendStatus(200);
+});
 // Increase the server timeout to 5 minutes (300,000 ms) to handle long AI requests
 app.timeout = 300000;
 
