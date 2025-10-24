@@ -32,10 +32,24 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 3001; // Use environment variable for port
+const allowedOrigins = [
+  "https://portfolio-generator-f.vercel.app",  // your frontend
+  "http://localhost:5173",                     // local dev (Vite)
+  "http://localhost:3000"                      // optional if using React default
+];
+
 app.use(
   cors({
-    origin: true,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 // Increase the server timeout to 5 minutes (300,000 ms) to handle long AI requests
