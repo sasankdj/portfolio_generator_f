@@ -36,6 +36,7 @@ const port = process.env.PORT || 3001; // Use environment variable for port
 // ✅ Define allowed origins
 const allowedOrigins = [
   "https://portfolio-generator-f.vercel.app", // production frontend
+  "https://portfolio-generator-f-1w22.vercel.app", // new production frontend
   "http://localhost:5173",                    // local dev (Vite)
   "http://localhost:3000"                     // optional React dev
 ];
@@ -1596,6 +1597,14 @@ async function generatePortfolioHtml(formData, template) {
 
   return generatedHtml;
 }
+app.get("/debug-cors", (req, res) => {
+  res.json({
+    originHeader: req.headers.origin || null,
+    corsHeader: res.getHeader("Access-Control-Allow-Origin") || "not set",
+    message: "Debug endpoint active",
+  });
+});
+
 
 app.listen(port, () => {
   console.log(`Backend server listening at http://localhost:${port}`);
