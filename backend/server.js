@@ -59,6 +59,17 @@ app.use(
   })
 );
 
+// Explicitly handle all OPTIONS requests
+app.options('*', (req, res) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin) || (origin && origin.endsWith('.vercel.app'))) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.status(204).send();
+});
+
 // Increase the server timeout to 5 minutes (300,000 ms) to handle long AI requests
 app.timeout = 300000;
 
