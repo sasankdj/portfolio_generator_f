@@ -59,18 +59,6 @@ app.use(
   })
 );
 
-// ✅ Handle all preflight (OPTIONS) requests manually
-app.options("*", (req, res) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin) || (origin && origin.endsWith(".vercel.app"))) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  return res.status(200).end();
-});
-
 // Increase the server timeout to 5 minutes (300,000 ms) to handle long AI requests
 app.timeout = 300000;
 
