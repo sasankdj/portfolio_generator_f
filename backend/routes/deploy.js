@@ -7,7 +7,8 @@ import FormData from 'form-data';
 import requireAuth from '../middleware/requireAuth.js';
 
 const router = express.Router();
-const upload = multer({ dest: 'uploads/' });
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 // Upload a zip and create a new Netlify site from it using the user's token
 router.post('/deploy', requireAuth, upload.single('zip'), async (req, res) => {
@@ -17,7 +18,7 @@ router.post('/deploy', requireAuth, upload.single('zip'), async (req, res) => {
 
   try {
     const form = new FormData();
-    form.append('file', fs.createReadStream(file.path));
+    form.append('file', file.buffer, { filename: file.originalname });
 
     const response = await fetch('https://api.netlify.com/api/v1/sites', {
       method: 'POST',
@@ -28,13 +29,9 @@ router.post('/deploy', requireAuth, upload.single('zip'), async (req, res) => {
       body: form,
     });
 
-    // cleanup uploaded temp file
-    fs.unlink(file.path, () => {});
-
     return res.json({ success: true, site: response.data });
   } catch (err) {
     console.error('Deploy error', err.response?.data || err.message);
-    if (file) fs.unlink(file.path, () => {});
     const netlifyErr = err.response?.data || { message: err.message };
     return res.status(500).json({ error: 'Deploy failed', details: netlifyErr });
   }
