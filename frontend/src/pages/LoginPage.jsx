@@ -16,7 +16,7 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState(null);
   const { login, isLoggedIn } = useAuth();
-  const { fetchUserDetails } = usePortfolio();
+  const { fetchUserDetails, userDetails, saveUserDetails } = usePortfolio();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -44,6 +44,7 @@ const LoginPage = () => {
         if (response.ok && data.token) {
           const userData = { name: data.name, email: data.email, token: data.token, id: data.id };
           login(userData);
+          await saveUserDetails({ email: data.email, fullName: data.name });
           if (location.state?.action === 'createPortfolio') {
             toast.success("Logged in! Now generating your portfolio...");
             navigate('/form', { state: { from: '/login', action: 'createPortfolio' }, replace: true });
@@ -86,6 +87,7 @@ const LoginPage = () => {
       if (response.ok) {
         const userData = { name: data.name, email: data.email, token: data.token, id: data.id };
         login(userData);
+        await saveUserDetails({ email: data.email, fullName: data.name });
 
         // Check if we need to perform a post-login action
         if (location.state?.action === 'createPortfolio') {
