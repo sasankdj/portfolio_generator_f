@@ -10,6 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 import { GoogleGenAI } from "@google/genai";
+import chromium from '@sparticuz/chromium';
 import Tesseract from 'tesseract.js'; 
 import { OAuth2Client } from 'google-auth-library';
 import mongoose from 'mongoose';
@@ -866,7 +867,7 @@ app.post('/generate-portfolio', async (req, res) => {
     return res.status(400).json({ error: 'Invalid template' });
   }
 
-  const templatePath = path.join(__dirname, '..', 'frontend', 'src', 'templates', `${templateFileName}.html`);
+  const templatePath = path.join(__dirname, 'templates', `${templateFileName}.html`);
 
   try {
     let generatedHtml = await fs.readFile(templatePath, 'utf8');
@@ -1063,7 +1064,7 @@ app.post('/api/generate-resume', async (req, res) => {
     return res.status(400).json({ error: 'Invalid resume template' });
   }
 
-  const templatePath = path.join(__dirname, '..', 'frontend', 'src', 'resumes', `${templateFileName}.html`);
+  const templatePath = path.join(__dirname, 'resumes', `${templateFileName}.html`);
 
   try {
     let generatedHtml = await fs.readFile(templatePath, 'utf8');
@@ -1092,7 +1093,7 @@ app.post('/api/download-resume', async (req, res) => {
     return res.status(400).json({ error: 'Invalid resume template' });
   }
 
-  const templatePath = path.join(__dirname, '..', 'frontend', 'src', 'resumes', `${templateFileName}.html`);
+  const templatePath = path.join(__dirname, 'resumes', `${templateFileName}.html`);
 
   try {
     let generatedHtml = await fs.readFile(templatePath, 'utf8');
@@ -1100,30 +1101,15 @@ app.post('/api/download-resume', async (req, res) => {
     const finalHtml = populateResumeTemplate(generatedHtml, formData);
 
     if (format === 'pdf') {
-      // Find Chrome executable path for puppeteer-core
-      let executablePath;
-      if (process.platform === 'win32') {
-        const chromePaths = [
-          path.join(process.env['PROGRAMFILES(X86)'], 'Google', 'Chrome', 'Application', 'chrome.exe'),
-          path.join(process.env.PROGRAMFILES, 'Google', 'Chrome', 'Application', 'chrome.exe'),
-          path.join(process.env.LOCALAPPDATA, 'Google', 'Chrome', 'Application', 'chrome.exe'),
-        ];
-        for (const p of chromePaths) {
-          try {
-            await fs.stat(p);
-            executablePath = p;
-            break;
-          } catch (e) {
-            // Path does not exist, continue to the next one
-          }
-        }
-      }
-      // Add paths for macOS and Linux if needed for deployment
+      // Use @sparticuz/chromium for serverless environments
+      const browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+        ignoreHTTPSErrors: true,
+      });
 
-      if (!executablePath) {
-        throw new Error('Google Chrome not found. Please install it to generate PDFs.');
-      }
-      const browser = await puppeteer.launch({ executablePath, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
       const page = await browser.newPage();
       await page.setContent(finalHtml, { waitUntil: 'networkidle0' });
       const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
@@ -1535,7 +1521,7 @@ async function generatePortfolioHtml(formData, template) {
     throw new Error('Invalid template specified.');
   }
 
-  const templatePath = path.join(__dirname, '..', 'frontend', 'src', 'templates', `${templateFileName}.html`);
+  const templatePath = path.join(__dirname, 'templates', `${templateFileName}.html`);
   let generatedHtml = await fs.readFile(templatePath, 'utf8');
 
   // --- Replace placeholders ---
@@ -1605,9 +1591,9 @@ app.get("/debug-cors", (req, res) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`🚀 Server is running on http://localhost:${port}`);
-});
+// app.listen(port, () => {
+//   console.log(`🚀 Server is running on http://localhost:${port}`);
+// });
 
 
 export default app;

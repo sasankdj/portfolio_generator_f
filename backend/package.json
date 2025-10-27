@@ -10,6 +10,7 @@
   "dependencies": {
     "@google/genai": "^1.22.0",
     "@google/generative-ai": "^0.15.0",
+    "@sparticuz/chromium": "^141.0.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "docx": "^9.5.1",
