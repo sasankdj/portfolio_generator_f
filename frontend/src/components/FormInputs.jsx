@@ -624,7 +624,7 @@ const FormInputs = ({ formData, setFormData }) => {
       <div className="p-6 border rounded-lg">
         <h3 className="text-xl font-semibold mb-4">Projects</h3>
         {Array.isArray(formData.projects) &&
-          formData.projects.filter(project => (project.title && project.title.trim()) || (project.description && project.description.trim()) || (project.technologies && project.technologies.trim()) || (project.link && project.link.trim())).map((project, index) => (
+          formData.projects.map((project, index) => (
             <div key={index} className="flex items-start gap-2 mb-4">
               <div className="flex-grow p-4 border rounded">
                 <label htmlFor={`project-title-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Project Title</label>
