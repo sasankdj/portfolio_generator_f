@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate, useNavigation } from "react-router-dom";
+  import { useLocation, useNavigate, useNavigation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { usePortfolio } from "../components/PortfolioContext";
 import { useAuth } from "../components/AuthContext";
@@ -277,19 +277,19 @@ function Form() {
                   📄 Download HTML
                 </button>
                 <button
-                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
+                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition cursor-pointer"
                   onClick={previewInNewTab}
                 >
                   👁️ Preview in New Tab
                 </button>
                 <button
-                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-green-500 rounded-lg hover:bg-green-600 transition"
+                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-green-500 rounded-lg hover:bg-green-600 transition cursor-pointer"
                   onClick={createAndNavigate}
                 >
                   ✨ Create Portfolio
                 </button>
                 <button
-                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-purple-500 rounded-lg hover:bg-purple-600 transition"
+                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-purple-500 rounded-lg hover:bg-purple-600 transition cursor-pointer"
                   onClick={() => navigate('/templates')}
                 >
                   🎨 Change Template
@@ -302,19 +302,19 @@ function Form() {
               <h3 className="text-lg font-semibold text-green-800 mb-4 text-center">ATS Resume</h3>
               <div className="space-y-3">
                 <button
-                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-red-500 rounded-lg hover:bg-red-600 transition"
+                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-red-500 rounded-lg hover:bg-red-600 transition cursor-pointer"
                   onClick={()=>navigate('/resume-templates')}
                 >
                   📄 Download PDF
                 </button>
                 <button
-                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
+                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition cursor-pointer"
                   onClick={()=>navigate('/resume-templates')}
                 >
                   📄 Download DOCX
                 </button>
                 <button
-                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-teal-500 rounded-lg hover:bg-teal-600 transition"
+                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-teal-500 rounded-lg hover:bg-teal-600 transition cursor-pointer"
                   onClick={() => navigate('/resume-templates')}
                 >
                   📄 Create Resume
