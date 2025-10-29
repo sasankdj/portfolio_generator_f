@@ -42,25 +42,25 @@ const PortfolioSuccess = () => {
             href={portfolioUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors cursor-pointer"
           >
             <Eye size={20} /> View Portfolio
           </a>
           <button
             onClick={() => downloadPortfolioHtml(template, userDetails)}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-500 text-white rounded-lg font-semibold hover:bg-indigo-600 transition-colors"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-500 text-white rounded-lg font-semibold hover:bg-indigo-600 transition-colors cursor-pointer"
           >
             <Download size={20} /> Download
           </button>
           <button
             onClick={() => navigate('/deployment')}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-cyan-500 text-white rounded-lg font-semibold hover:bg-cyan-600 transition-colors"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-cyan-500 text-white rounded-lg font-semibold hover:bg-cyan-600 transition-colors cursor-pointer"
           >
             <UploadCloud size={20} /> Deploy Online
           </button>
           <button
             onClick={handleEdit}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-yellow-600 transition-colors"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-yellow-600 transition-colors cursor-pointer"
           >
             <Edit size={20} /> Edit Details
           </button>

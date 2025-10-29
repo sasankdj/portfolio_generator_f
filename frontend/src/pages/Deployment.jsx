@@ -162,15 +162,15 @@ export default function Deployment() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-            <button 
+            <button
               onClick={() => navigate(-1)}
-              className="px-4 py-2 bg-gray-100 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+              className="px-4 py-2 bg-gray-100 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-colors cursor-pointer"
             >
               ← Back
             </button>
-            <button 
+            <button
               onClick={() => navigate('/form')}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition-colors"
+              className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition-colors cursor-pointer"
             >
               ✏️ Edit Portfolio
             </button>
@@ -197,14 +197,14 @@ export default function Deployment() {
               {!isNetlifyConnected && (
                 <button
                   onClick={handleConnectNetlify}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-cyan-600 text-white rounded-lg font-semibold hover:bg-cyan-700 transition-colors mb-2"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-cyan-600 text-white rounded-lg font-semibold hover:bg-cyan-700 transition-colors cursor-pointer mb-2"
                 >
                   <Link size={20} /> Connect Netlify Account
                 </button>
               )}
               <button
                 onClick={handleNetlifyDeployClick}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-cyan-600 text-white rounded-lg font-semibold hover:bg-cyan-700 transition-colors disabled:bg-gray-400"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-cyan-600 text-white rounded-lg font-semibold hover:bg-cyan-700 transition-colors cursor-pointer disabled:bg-gray-400"
                 disabled={isNetlifyDeploying || !isNetlifyConnected}
               >
                 {isNetlifyDeploying ? <Loader size={20} className="animate-spin" /> : <UploadCloud size={20} />} {isNetlifyDeploying ? 'Deploying...' : (isNetlifyConnected ? 'Deploy to Netlify' : 'Connect Netlify First')}
@@ -242,7 +242,7 @@ export default function Deployment() {
                   </a>
                 </li>
                  <input type="file" accept=".zip" onChange={(e) => setDeployZip(e.target.files[0])} />
-                <button onClick={handleNetlifyManualDeploy} disabled={!deployZip}>
+                <button onClick={handleNetlifyManualDeploy} disabled={!deployZip} className="cursor-pointer">
                   Deploy to Netlify</button>
                 <li>
                   <strong>Drag & Drop:</strong> Log in to your Netlify dashboard. In the "Sites" section, you'll see an area to drag and drop your site. Simply drag and drop the downloaded `portfolio.zip` file into this area. Netlify will automatically unzip and deploy it.
