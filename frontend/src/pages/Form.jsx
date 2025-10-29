@@ -237,7 +237,7 @@ function Form() {
       <div className="max-w-5xl mx-auto">
         <div className="mb-6 flex justify-start">
           <button onClick={() => navigate('/templates')}
-            className="px-6 py-3 border-2 border-gray-600 text-gray-600 rounded-lg hover:bg-gray-600 hover:text-white transition duration-300 font-medium flex items-center">
+            className="px-6 py-3 border-2 border-gray-600 text-gray-600 rounded-lg hover:bg-gray-600 hover:text-white transition duration-300 font-medium flex items-center cursor-pointer">
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
             </svg>
@@ -257,7 +257,7 @@ function Form() {
             <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">Common Actions</h3>
             <div className="flex flex-wrap gap-4 justify-center">
               <button
-                className="flex items-center justify-center px-4 py-3 text-white bg-gray-700 rounded-lg hover:bg-gray-800 transition"
+                className="flex items-center justify-center px-4 py-3 text-white bg-gray-700 rounded-lg hover:bg-gray-800 transition cursor-pointer"
                 onClick={handleSubmit}
               >
                 💾 Save Details
@@ -271,7 +271,7 @@ function Form() {
               <h3 className="text-lg font-semibold text-blue-800 mb-4 text-center">Portfolio Website</h3>
               <div className="space-y-3">
                 <button
-                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
+                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition cursor-pointer"
                   onClick={downloadHtmlFile}
                 >
                   📄 Download HTML

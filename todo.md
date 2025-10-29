@@ -1,0 +1,5 @@
+- Update formData.skills to be an array instead of string
+- Modify skills section UI to display chips with remove buttons
+- Add input field and + button to add new skills
+- Update uploadResume to handle skills as array
+- Test the changes

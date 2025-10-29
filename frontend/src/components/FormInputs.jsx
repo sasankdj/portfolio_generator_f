@@ -14,6 +14,25 @@ const FormInputs = ({ formData, setFormData }) => {
   const [enhancing, setEnhancing] = useState(false);
   const fileInputRef = useRef(null);
   const [globallyEnhancedData, setGloballyEnhancedData] = useState(null);
+  const [newSkill, setNewSkill] = useState('');
+
+  // Normalize skills to array, filter out empty strings
+  const skillsArray = Array.isArray(formData.skills) ? formData.skills.filter(skill => skill.trim() !== '') : (formData.skills ? formData.skills.split(',').map(s => s.trim()).filter(s => s.trim() !== '') : []);
+
+  const handleAddSkill = () => {
+    if (newSkill.trim()) {
+      const updatedSkills = [...skillsArray, newSkill.trim()];
+      setFormData({ ...formData, skills: updatedSkills });
+      setNewSkill('');
+      toast.success("Skill added.");
+    }
+  };
+
+  const handleRemoveSkill = (index) => {
+    const updatedSkills = skillsArray.filter((_, i) => i !== index);
+    setFormData({ ...formData, skills: updatedSkills });
+    toast.info("Skill removed.");
+  };
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -36,9 +55,17 @@ const FormInputs = ({ formData, setFormData }) => {
   };
 
   const handleAddProject = () => {
+    const projects = formData.projects || [];
+    if (projects.length > 0) {
+      const last = projects[projects.length - 1];
+      if (!last.title.trim() && !last.description.trim() && !last.technologies.trim() && !last.link.trim()) {
+        toast.warn("Please fill the last project before adding a new one.");
+        return;
+      }
+    }
     setFormData(prev => ({
       ...prev,
-      projects: [...(prev.projects || []), { title: '', description: '', technologies: '', link: '' }]
+      projects: [...projects, { title: '', description: '', technologies: '', link: '' }]
     }));
     toast.success("New project added.");
   };
@@ -561,20 +588,43 @@ const FormInputs = ({ formData, setFormData }) => {
       {/* Skills */}
       <div className="p-6 border rounded-lg">
         <h3 className="text-xl font-semibold mb-4">Skills</h3>
-        <input
-          name="skills"
-          value={formData.skills}
-          onChange={handleInputChange}
-          placeholder="Skills (comma-separated)"
-          className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1"
-        />
+        <div className="flex gap-2 mb-4">
+          <input
+            type="text"
+            value={newSkill}
+            onChange={(e) => setNewSkill(e.target.value)}
+            placeholder="Add a new skill"
+            className="flex-1 p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+          />
+          <button
+            onClick={handleAddSkill}
+            className="px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          >
+            Add Skill
+          </button>
+        </div>
+        {skillsArray.length > 0 && (
+          <div className="space-y-2">
+            {skillsArray.map((skill, index) => (
+              <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                <span>{skill}</span>
+                <button
+                  onClick={() => handleRemoveSkill(index)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Projects */}
       <div className="p-6 border rounded-lg">
         <h3 className="text-xl font-semibold mb-4">Projects</h3>
         {Array.isArray(formData.projects) &&
-          formData.projects.map((project, index) => (
+          formData.projects.filter(project => (project.title && project.title.trim()) || (project.description && project.description.trim()) || (project.technologies && project.technologies.trim()) || (project.link && project.link.trim())).map((project, index) => (
             <div key={index} className="flex items-start gap-2 mb-4">
               <div className="flex-grow p-4 border rounded">
                 <label htmlFor={`project-title-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Project Title</label>

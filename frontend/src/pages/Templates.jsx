@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, Check, Palette, Sparkles, Download } from 'lucide-react';
+import { Eye, Check, Palette, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ClassicTheme from '../templates/ClassicTheme.html?raw';
 import DarkTheme from '../templates/DarkTheme.html?raw';
@@ -13,7 +13,6 @@ import PreviewCreative from '../templates/PreviewCreative.html?raw';
 
 export default function Templates() {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [previewTemplate, setPreviewTemplate] = useState(null);
   const navigate = useNavigate();
 
   const handleSelect = (templateId) => {
@@ -21,7 +20,9 @@ export default function Templates() {
   };
 
   const handlePreview = (template) => {
-    setPreviewTemplate(template);
+    const blob = new Blob([template.content], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
   };
 
   const handleUseTemplate = () => {
@@ -113,35 +114,7 @@ export default function Templates() {
         <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-white bg-opacity-10 rounded-full animate-pulse delay-1000"></div>
       </motion.div>
 
-      {/* Preview Modal */}
-      {previewTemplate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl"
-          >
-            <div className="flex justify-between items-center p-6 border-b">
-              <h3 className="text-2xl font-bold text-gray-800">
-                Preview: {previewTemplate.name}
-              </h3>
-              <button
-                onClick={() => setPreviewTemplate(null)}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-            <div className="h-[70vh] overflow-auto">
-              <iframe
-                srcDoc={previewTemplate.content}
-                className="w-full h-full border-0"
-                title={`Preview of ${previewTemplate.name}`}
-              />
-            </div>
-          </motion.div>
-        </div>
-      )}
+
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -206,7 +179,7 @@ export default function Templates() {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white/50 backdrop-blur-sm border border-white/30 text-gray-700 rounded-xl font-medium hover:bg-white/70 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white/50 backdrop-blur-sm border border-white/30 text-gray-700 rounded-xl font-medium hover:bg-white/70 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => handlePreview(template)}
                     disabled={!template.content}
                   >
@@ -216,7 +189,7 @@ export default function Templates() {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
+                    className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 cursor-pointer ${
                       selectedTemplate === template.id
                         ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
                         : 'bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600 shadow-lg'
@@ -258,7 +231,7 @@ export default function Templates() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleDownloadTemplate(templates.find(t => t.id === selectedTemplate))}
-                  className="flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200 transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200 transition-colors cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
                   Download
@@ -270,7 +243,7 @@ export default function Templates() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedTemplate(null)}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-colors cursor-pointer"
               >
                 Clear
               </motion.button>
@@ -281,7 +254,7 @@ export default function Templates() {
                 disabled={!selectedTemplate}
                 className={`px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                   selectedTemplate
-                    ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600 shadow-lg'
+                    ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600 shadow-lg cursor-pointer'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
