@@ -877,22 +877,23 @@ app.post('/generate-portfolio', async (req, res) => {
     generatedHtml = generatedHtml.replace(/{{email}}/g, formData.email || '');
     generatedHtml = generatedHtml.replace(/{{github}}/g, formData.github || '');
     generatedHtml = generatedHtml.replace(/{{careerObjective}}/g, formData.careerObjective || '');
-    generatedHtml = generatedHtml.replace(/{{avatarUrl}}/g, formData.image || 'https://imgcdn.stablediffusionweb.com/2024/11/1/b51f49a9-82a1-4659-905d-c8cd8643bade.jpg');
+  generatedHtml = generatedHtml.replace(/{{avatarUrl}}/g, formData.image || 'https://imgcdn.stablediffusionweb.com/2024/11/1/b51f49a9-82a1-4659-905d-c8cd8643bade.jpg');
 
-    // Skills
-    if (formData.skills) {
-      let skillsHtml = '';
-      if (template === 'classic') {
-        skillsHtml = formData.skills.split(',').map(skill => `<span class="px-4 py-2 bg-indigo-100 text-indigo-800 rounded-full">${skill.trim()}</span>`).join('\n');
-      } else if (template === 'dark') {
-        skillsHtml = formData.skills.split(',').map(skill => `<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">${skill.trim()}</span>`).join('\n');
-      } else if (template === 'minimal') {
-        skillsHtml = formData.skills.split(',').map(skill => `<span class="skill">${skill.trim()}</span>`).join('\n');
-      } else if (template === 'creative') {
-        skillsHtml = formData.skills.split(',').map(skill => `<span class="px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-sm font-medium">${skill.trim()}</span>`).join('\n');
-      }
-      generatedHtml = generatedHtml.replace('<!-- SKILLS -->', skillsHtml);
+  // Skills
+  if (formData.skills) {
+    const skillsList = Array.isArray(formData.skills) ? formData.skills : formData.skills.split(',');
+    let skillsHtml = '';
+    if (template === 'classic') {
+      skillsHtml = skillsList.map(skill => `<span class="px-4 py-2 bg-indigo-100 text-indigo-800 rounded-full">${skill.trim()}</span>`).join('\n');
+    } else if (template === 'dark') {
+      skillsHtml = skillsList.map(skill => `<span class="px-4 py-2 bg-gray-700 text-green-400 rounded-lg">${skill.trim()}</span>`).join('\n');
+    } else if (template === 'minimal') {
+      skillsHtml = skillsList.map(skill => `<span class="skill">${skill.trim()}</span>`).join('\n');
+    } else if (template === 'creative') {
+      skillsHtml = skillsList.map(skill => `<span class="px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-sm font-medium">${skill.trim()}</span>`).join('\n');
     }
+    generatedHtml = generatedHtml.replace('<!-- SKILLS -->', skillsHtml);
+  }
 
 
     // Projects
@@ -1019,7 +1020,8 @@ function populateResumeTemplate(templateHtml, formData) {
 
   // Skills
   if (formData.skills) {
-    const skillsHtml = `<p>${formData.skills.split(',').map(s => s.trim()).join(', ')}</p>`;
+    const skillsArray = Array.isArray(formData.skills) ? formData.skills : formData.skills.split(',').map(s => s.trim());
+    const skillsHtml = `<p>${skillsArray.map(s => s.trim()).join(', ')}</p>`;
     generatedHtml = generatedHtml.replace('<!-- SKILLS -->', skillsHtml);
   }
 
@@ -1247,7 +1249,7 @@ app.post('/api/download-resume', async (req, res) => {
               new Paragraph({
                 children: [
                   new TextRun({
-                    text: formData.skills,
+                    text: Array.isArray(formData.skills) ? formData.skills.join(', ') : formData.skills,
                     size: 24,
                   }),
                 ],

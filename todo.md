@@ -1,3 +1,0 @@
-- [x] Remove the filter in the projects section map to display all projects, including empty ones, so users can edit newly added projects.
-- [x] Change initial projects to single empty entry.
-- [ ] Test the projects section to ensure + button adds projects and text inputs are editable.
