@@ -195,9 +195,7 @@ This project is licensed under the **MIT License** — feel free to use, modify,
 
 Special thanks to:
 
-  * **Internvita & Coursvita** for the opportunity and mentorship
+  * **Coursvita** for the opportunity and mentorship
   * **Open-source libraries** and contributors that made this project possible
 
 -----
-
-Let me know if you need any other text converted or formatted\!
