@@ -73,6 +73,7 @@ Users can choose from pre-built templates, fill in their details via a guided ch
 ```bash
 git clone https://github.com/your-username/portfolio-generator.git
 cd portfolio-generator
+```
 
 ## 🚀 Portfolio Generator Project Setup
 
