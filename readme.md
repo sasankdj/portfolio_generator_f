@@ -73,3 +73,130 @@ Users can choose from pre-built templates, fill in their details via a guided ch
 ```bash
 git clone https://github.com/your-username/portfolio-generator.git
 cd portfolio-generator
+
+## 🚀 Portfolio Generator Project Setup
+
+### 2️⃣ Install Dependencies
+
+  * **Backend:**
+    ```bash
+    npm install
+    ```
+  * **Frontend:**
+    ```bash
+    cd client
+    npm install
+    ```
+
+-----
+
+### 3️⃣ Setup Environment Variables
+
+Create a **`.env`** file in the root directory and add the following variables:
+
+```dotenv
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+GOOGLE_CLIENT_ID=your_google_client_id
+GITHUB_CLIENT_ID=your_github_client_id
+PORT=5000
+```
+
+-----
+
+### 4️⃣ Run the Project
+
+```bash
+# Run both client and server
+npm run dev
+```
+
+> **Note:**
+> Frontend runs on **`http://localhost:3000`**
+> Backend runs on **`http://localhost:5000`**
+
+-----
+
+### 5️⃣ Deployment
+
+  * **Frontend:** Deploy via **Netlify**
+  * **Backend:** Deploy via **Render** or **Vercel**
+
+-----
+
+## 📁 Folder Structure
+
+```
+Portfolio-Generator/
+│
+├── client/                   # React frontend
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── utils/
+│   │   └── App.js
+│   ├── public/
+│   └── package.json
+│
+├── server/                   # Express backend
+│   ├── models/               # MongoDB schemas
+│   ├── routes/               # API endpoints
+│   ├── controllers/          # Business logic
+│   ├── config/               # DB connection & env setup
+│   └── server.js
+│
+├── .env
+├── .gitignore
+├── package.json
+└── README.md
+```
+
+-----
+
+## 🧠 Working Flow
+
+1.  User Authentication (**Google / GitHub / Email**)
+2.  Input Details through **chatbot or form**
+3.  **AI Enhancer** improves text quality
+4.  **Preview Portfolio** instantly
+5.  **Generate Resume** (ATS-friendly)
+6.  Deploy to Netlify or **Download Code as ZIP**
+
+-----
+
+## 🔮 Future Enhancements
+
+  * 🌙 **Dark mode** support
+  * 📊 Portfolio **analytics dashboard**
+  * 🧩 Additional **template designs**
+  * 📧 **Custom domain** integration
+  * 🗂️ **Drag-and-drop** section customization
+  * 🔔 **Real-time content** editing
+
+-----
+
+## 🧑‍💻 Developer
+
+  * **👨‍💻 Your Name**
+  * **🎓 Engineering Student** (Computer Science - 3rd Year)
+  * **🏫 Built under Coursvita | Internvita Program**
+  * **🔗 LinkedIn | GitHub**
+
+-----
+
+## 📜 License
+
+This project is licensed under the **MIT License** — feel free to use, modify, and share.
+
+-----
+
+## 💡 Acknowledgements
+
+Special thanks to:
+
+  * **Internvita & Coursvita** for the opportunity and mentorship
+  * **Open-source libraries** and contributors that made this project possible
+
+-----
+
+Let me know if you need any other text converted or formatted\!
