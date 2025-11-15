@@ -213,6 +213,9 @@ app.use('/api', deployRoutes);
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY, // get key from .env
 });
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: "ok", message: "Server is running" });
+});
 
 // --- Authentication Routes ---
 app.post('/api/auth/signup', async (req, res) => {
