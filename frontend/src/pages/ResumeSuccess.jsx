@@ -1,92 +1,92 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Download, Eye, ArrowLeft, FileText, File, Loader } from 'lucide-react';
-import { usePortfolio } from '../components/PortfolioContext';
-import { toast } from 'react-toastify';
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  Download,
+  Eye,
+  ArrowLeft,
+  FileText,
+  File,
+  Loader,
+  CheckCircle,
+} from "lucide-react";
+import { usePortfolio } from "../components/PortfolioContext";
+import { toast } from "react-toastify";
+import { motion } from "framer-motion";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const ResumeSuccess = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const { resumeUrl, resumeHtml, template } = state || {}; // template is passed from ResumeTemplates page
+  const { resumeUrl, resumeHtml, template } = state || {};
   const { userDetails } = usePortfolio();
   const [loadingFormat, setLoadingFormat] = useState(null);
 
   const handlePrintToPdf = async () => {
-    setLoadingFormat('pdf');
+    setLoadingFormat("pdf");
 
-    // Open the window immediately to avoid popup blockers.
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (!printWindow) {
-      toast.error("Please allow popups for this site to print your resume.");
+      toast.error("Allow popups to print resume.");
       setLoadingFormat(null);
       return;
     }
-    printWindow.document.write('<html><head><title>Printing Resume</title></head><body><p>Preparing your resume for printing...</p></body></html>');
+
+    printWindow.document.write("<p>Preparing PDF...</p>");
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/generate-resume`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ formData: userDetails, template }),
       });
-      if (!response.ok) throw new Error('Failed to load resume for printing.');
-      
+
+      if (!response.ok) throw new Error();
+
       const { html } = await response.json();
-      
-      // Write the resume content and the print script to the new window.
+
       printWindow.document.open();
       printWindow.document.write(html);
-      // This script will run after the content is loaded.
-      printWindow.document.write('<script>window.onload = function() { window.print(); window.onafterprint = function() { window.close(); } };</script>');
+      printWindow.document.write(`
+        <script>
+          window.onload = function() {
+            window.print();
+            window.onafterprint = function() { window.close(); }
+          }
+        </script>
+      `);
       printWindow.document.close();
-
     } catch {
-      printWindow.close(); // Close the popup on error
-      toast.error('Could not prepare PDF for printing.');
+      printWindow.close();
+      toast.error("Failed to generate PDF.");
     } finally {
       setLoadingFormat(null);
     }
   };
 
   const handleDownload = async (format) => {
-    if (!template) {
-      toast.error("Template information is missing. Please go back and try again.");
-      return;
-    }
     setLoadingFormat(format);
     try {
       const response = await fetch(`${API_BASE_URL}/api/download-resume`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          formData: userDetails,
-          template: template,
-          format: format,
-        }),
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ formData: userDetails, template, format }),
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to generate ${format} file.`);
-      }
+      if (!response.ok) throw new Error();
 
-      const fileName = `resume.${format}`;
-      // The server now sends the file directly, so we can get it as a blob.
       const blob = await response.blob();
       const fileUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = fileUrl;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(fileUrl);
 
-      toast.success(`Successfully downloaded ${format.toUpperCase()}!`);
-    } catch (error) {
-      console.error(`Error downloading ${format}:`, error);
-      toast.error(`Could not download ${format.toUpperCase()}. Please try again.`);
+      const a = document.createElement("a");
+      a.href = fileUrl;
+      a.download = `resume.${format}`;
+      a.click();
+
+      URL.revokeObjectURL(fileUrl);
+      toast.success(`${format.toUpperCase()} downloaded`);
+    } catch {
+      toast.error(`Download failed`);
     } finally {
       setLoadingFormat(null);
     }
@@ -94,60 +94,104 @@ const ResumeSuccess = () => {
 
   const handlePreview = async () => {
     if (resumeUrl) {
-      window.open(resumeUrl, '_blank');
+      window.open(resumeUrl, "_blank");
     } else if (resumeHtml) {
-      const blob = new Blob([resumeHtml], { type: 'text/html' });
-      const blobUrl = URL.createObjectURL(blob);
-      window.open(blobUrl, '_blank');
-    } else {
-      // Fetch the resume HTML if not available
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/generate-resume`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ formData: userDetails, template }),
-        });
-        if (!response.ok) throw new Error('Failed to generate resume for preview.');
-        const { html } = await response.json();
-        const blob = new Blob([html], { type: 'text/html' });
-        const blobUrl = URL.createObjectURL(blob);
-        window.open(blobUrl, '_blank');
-      } catch (error) {
-        console.error('Error generating resume for preview:', error);
-        toast.error('Could not load preview. Please try again.');
-      }
+      const blob = new Blob([resumeHtml], { type: "text/html" });
+      window.open(URL.createObjectURL(blob));
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
-      <div className="bg-white p-10 rounded-2xl shadow-xl max-w-lg w-full text-center">
-        <div className="mx-auto w-24 h-24 flex items-center justify-center bg-green-100 rounded-full">
-          <svg className="w-16 h-16 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-        </div>
-        <h1 className="text-3xl font-bold text-gray-800 mt-6 mb-2">Success!</h1>
-        <p className="text-gray-600 mb-8">Your professional resume has been generated.</p>
+    <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center px-6 relative overflow-hidden">
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 justify-center">
-          <button onClick={handlePrintToPdf} disabled={loadingFormat === 'pdf'} className="flex items-center justify-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:bg-red-400">
-            {loadingFormat === 'pdf' ? <Loader className="animate-spin" size={20} /> : <FileText size={20} />}
-            Download PDF
-          </button>
-          <button onClick={() => handleDownload('docx')} disabled={loadingFormat === 'docx'} className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-blue-400">
-            {loadingFormat === 'docx' ? <Loader className="animate-spin" size={20} /> : <File size={20} />}
-            Download DOCX
-          </button>
-          <button onClick={handlePreview} className="sm:col-span-2 flex items-center justify-center gap-2 px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
-            <Eye size={20} /> Preview
-          </button>
-          <button onClick={() => navigate('/resume-templates')} className="sm:col-span-2 flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
-            🎨 Change Template
-          </button>
+      {/* 🔥 Glow */}
+      <div className="absolute w-[500px] h-[500px] bg-green-500/10 blur-[120px] top-[-100px] left-[-100px]" />
+      <div className="absolute w-[400px] h-[400px] bg-yellow-500/10 blur-[120px] bottom-[-100px] right-[-100px]" />
+
+      {/* MAIN CARD */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative z-10 w-full max-w-lg p-8 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-lg text-center"
+      >
+        {/* ICON */}
+        <div className="flex justify-center mb-6">
+          <CheckCircle className="text-green-400 w-16 h-16" />
         </div>
-        <button onClick={() => navigate('/home')} className="flex items-center justify-center gap-2 mt-8 text-sm text-gray-500 hover:text-gray-700">
+
+        {/* TEXT */}
+        <h1 className="text-3xl font-bold mb-2">
+          Resume <span className="text-green-400">Ready</span>
+        </h1>
+
+        <p className="text-gray-400 mb-8">
+          Your professional resume has been generated successfully.
+        </p>
+
+        {/* BUTTONS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+          {/* PDF */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handlePrintToPdf}
+            disabled={loadingFormat === "pdf"}
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-green-500 text-black font-medium hover:bg-green-400 disabled:opacity-40"
+          >
+            {loadingFormat === "pdf" ? (
+              <Loader className="animate-spin" size={18} />
+            ) : (
+              <FileText size={18} />
+            )}
+            PDF
+          </motion.button>
+
+          {/* DOCX */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => handleDownload("docx")}
+            disabled={loadingFormat === "docx"}
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-yellow-400 text-black font-medium hover:bg-yellow-300 disabled:opacity-40"
+          >
+            {loadingFormat === "docx" ? (
+              <Loader className="animate-spin" size={18} />
+            ) : (
+              <File size={18} />
+            )}
+            DOCX
+          </motion.button>
+
+          {/* PREVIEW */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handlePreview}
+            className="sm:col-span-2 flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-white/10 hover:bg-white/20"
+          >
+            <Eye size={18} /> Preview
+          </motion.button>
+
+          {/* CHANGE TEMPLATE */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate("/resume-templates")}
+            className="sm:col-span-2 flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-white/20 hover:bg-white/10"
+          >
+            🎨 Change Template
+          </motion.button>
+        </div>
+
+        {/* BACK */}
+        <button
+          onClick={() => navigate("/home")}
+          className="flex items-center justify-center gap-2 mt-8 text-sm text-gray-400 hover:text-white"
+        >
           <ArrowLeft size={16} /> Back to Home
         </button>
-      </div>
+      </motion.div>
     </div>
   );
 };
