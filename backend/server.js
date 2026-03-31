@@ -199,7 +199,7 @@ const oAuth2Client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID, process.env.
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected successfully.'))
   .catch(err => console.error('MongoDB connection error:', err));
-
+console.log("MONGO_URI:", process.env.MONGO_URI);
 // Middleware
 
 app.use(express.json({ limit: '50mb' }));
