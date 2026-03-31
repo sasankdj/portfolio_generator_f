@@ -209,9 +209,10 @@ const FormInputs = ({ formData, setFormData }) => {
     } finally {
       setIsParsingResume(false);
       setGlobalLoading(false);
-      if (toast.isActive(toastId) && toast.isLoading(toastId)) {
-        toast.dismiss(toastId);
-      }
+      // if (toast.isActive(toastId) && toast.isLoading(toastId)) {
+      //   toast.dismiss(toastId);
+      // }
+      toast.dismiss(toastId);
     }
   };
 
@@ -273,35 +274,42 @@ const FormInputs = ({ formData, setFormData }) => {
 
 
   // Enhance All with AI
-  const enhanceAllWithAI = async () => {
-    setEnhancing(true);
-    setGlobalLoading(true);
-    setGloballyEnhancedData(null);
-    try {
-      const resp = await fetch(`${API_BASE_URL}/api/enhance-all`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ formData }),
+ const enhanceAllWithAI = async () => {
+  setEnhancing(true);
+  setGlobalLoading(true);
+  setGloballyEnhancedData(null);
+
+  try {
+    // ❌ REMOVE IMAGE BEFORE SENDING
+    const { image, ...safeFormData } = formData;
+
+    const resp = await fetch(`${API_BASE_URL}/api/enhance-all`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ formData: safeFormData }),
+    });
+
+    if (!resp.ok) throw new Error("Failed to get AI enhancement.");
+
+    const data = await resp.json();
+    setGloballyEnhancedData(data.enhancedData);
+
+    toast.success("AI suggestions ready 🚀");
+
+    setTimeout(() => {
+      suggestionsContainerRef.current?.scrollIntoView({
+        behavior: "smooth",
       });
+    }, 100);
 
-      if (!resp.ok) {
-        throw new Error("Failed to get AI enhancement.");
-      }
-
-      const data = await resp.json();
-      setGloballyEnhancedData(data.enhancedData);
-      toast.success("AI suggestions are ready for your review!");
-      setTimeout(() => {
-        suggestionsContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
-    } catch (err) {
-      console.error(err);
-      toast.error("Error enhancing portfolio. Please try again.");
-    } finally {
-      setEnhancing(false);
-      setGlobalLoading(false);
-    }
-  };
+  } catch (err) {
+    console.error(err);
+    toast.error("AI enhancement failed");
+  } finally {
+    setEnhancing(false);
+    setGlobalLoading(false);
+  }
+};
 
   const acceptGlobalEnhancement = () => {
     if (globallyEnhancedData) {
@@ -314,541 +322,486 @@ const FormInputs = ({ formData, setFormData }) => {
   const rejectGlobalEnhancement = () => {
     setGloballyEnhancedData(null);
   };
+  const AISuggestion = ({ field, value }) => {
+  const accept = () => {
+    if (field.includes("projects")) {
+      const [_, index, key] = field.split(".");
+      const updated = [...formData.projects];
+      updated[index][key] = value;
+      setFormData({ ...formData, projects: updated });
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
+    toast.success("Updated");
+  };
 
   return (
-    <div className="space-y-8">
-      {/* Global AI Enhance Button */}
-      <div className="p-4 border rounded-lg bg-gray-50 text-center">
-        <button
-          onClick={enhanceAllWithAI}
-          className="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-transform transform hover:scale-105 shadow-lg"
-          disabled={enhancing}
-        >
-          {enhancing ? "Enhancing..." : "✨ Enhance All with AI"}
+    <div className="mt-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded">
+      <p className="text-yellow-400 text-sm mb-1">AI Suggestion</p>
+      <p className="text-gray-300 text-sm mb-2">{value}</p>
+
+      <div className="flex gap-2">
+        <button onClick={accept} className="px-3 py-1 bg-green-500 text-black rounded">
+          Accept
         </button>
-        <p className="text-sm text-gray-500 mt-2">Let AI review and improve your entire portfolio content.</p>
-      </div>
-
-      {/* Personal Details */}
-      <div className="p-6 border rounded-lg">
-        <h3 className="text-xl font-semibold mb-4">Personal Details</h3>
-        <div className="mt-4 border-t pt-4">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleResumeChange}
-            className="hidden"
-          />
-          <button
-            onClick={() => fileInputRef.current.click()}
-            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 cursor-pointer"
-            disabled={isParsingResume}
-          >
-            {isParsingResume ? "Parsing..." : "📄 Upload Resume & Autofill"}
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <div>
-            <label htmlFor="fullName" className="block text-md font-semibold text-gray-800 mb-2">Full Name</label>
-            <input
-              id="fullName"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleInputChange}
-              placeholder="Full Name"
-              className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-            />
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-md font-semibold text-gray-800 mb-2">Email</label>
-            <input
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              placeholder="Email"
-              className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-            />
-          </div>
-          <div>
-            <label htmlFor="phone" className="block text-md font-semibold text-gray-800 mb-2">Mobile Number</label>
-            <input
-              id="phone"
-              name="phone"
-              value={formData.phone || ''}
-              onChange={handleInputChange}
-              placeholder="Mobile Number"
-              className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-            />
-          </div>
-          <div>
-            <label htmlFor="portfolioLink" className="block text-md font-semibold text-gray-800 mb-2">Portfolio Website URL</label>
-            <input
-              id="portfolioLink"
-              name="portfolioLink"
-              value={formData.portfolioLink || ''}
-              onChange={handleInputChange}
-              placeholder="https://yourportfolio.com"
-              className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-            />
-          </div>
-          <div>
-            <label htmlFor="linkedin" className="block text-md font-semibold text-gray-800 mb-2">LinkedIn URL <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
-            <input
-              id="linkedin"
-              name="linkedin"
-              value={formData.linkedin}
-              onChange={handleInputChange}
-              placeholder="LinkedIn URL"
-              className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-            />
-          </div>
-          <div>
-            <label htmlFor="github-personal" className="block text-md font-semibold text-gray-800 mb-2">GitHub Username or URL <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
-            <div className="flex items-center gap-2">
-              <input
-                id="github-personal"
-                name="github"
-                value={formData.github}
-                onChange={handleInputChange}
-                placeholder="GitHub Username or URL eg:sasankdj"
-                className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-              />
-              <button
-                onClick={handleFetchRepos}
-                className="px-4 py-3 bg-gray-800 text-white rounded-lg hover:bg-black whitespace-nowrap cursor-pointer"
-                disabled={isFetchingRepos || isParsingResume}
-              >
-                {isFetchingRepos ? (
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : "Fetch"}
-              </button>
-            </div>
-          </div>
-          <div className="md:col-span-2">
-            <label htmlFor="headline" className="block text-md font-semibold text-gray-800 mb-2">Headline <span className="text-gray-500 font-normal text-sm">(e.g., Senior Software Engineer) (autogenerated by ai if not filled)</span></label>
-            <input
-              id="headline"
-              name="headline"
-              value={formData.headline}
-              onChange={handleInputChange}
-              placeholder="Headline"
-              className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-            />
-          </div>
-        </div>
-        <div className="mt-4">
-          <label htmlFor="image" className="block text-md font-semibold text-gray-800 mb-2">Personal Photo <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
-          <input
-            id="image"
-            type="file"
-            onChange={handleImageChange}
-            accept="image/*"
-            className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-          />
-          {formData.image && (
-            <img
-              src={formData.image}
-              alt="Preview"
-              className="mt-4 w-32 h-32 rounded-full object-cover"
-            />
-          )}
-        </div>
-      </div>
-
-      {/* GitHub & Repositories */}
-      <div className="p-6 border rounded-lg">
-        <h3 className="text-xl font-semibold mb-4">GitHub & Repositories</h3>
-        <label htmlFor="github-repo" className="block text-md font-semibold text-gray-800 mb-2">GitHub Username or URL</label>
-        <div className="flex items-center gap-2 mb-4">
-          <input
-            id="github-repo"
-            name="github"
-            value={formData.github}
-            onChange={handleInputChange}
-            placeholder="e.g., sasankdj"
-            className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-          />
-          <button
-            onClick={handleFetchRepos}
-            className="px-4 py-3 bg-gray-800 text-white rounded-lg hover:bg-black whitespace-nowrap"
-            disabled={isFetchingRepos || isParsingResume}
-          >
-            {isFetchingRepos ? (
-              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            ) : "Fetch Repos"}
-          </button>
-        </div>
-        {fetchedRepos.length > 0 && (
-          <div ref={reposContainerRef}>
-            <p className="text-sm text-gray-500 mb-4">Select repositories to add them to your projects list below.</p>
-            <div className="max-h-64 overflow-y-auto space-y-2 pr-2">
-              {fetchedRepos.map((repo, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md border">
-                  <div>
-                    <p className="font-semibold text-gray-800">{repo.title}</p>
-                    <p className="text-sm text-gray-600">{repo.description}</p>
-                  </div>
-                  <button onClick={() => addRepoToProjects(repo)} className="px-3 py-1 text-sm bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors">
-                    + Add
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Professional Summary */}
-      <div className="p-6 border rounded-lg">
-        <h3 className="text-xl font-semibold mb-4">Professional Summary <span className="text-gray-400 text-sm font-normal">(autogenerated by ai if not filled)</span></h3>
-        <textarea
-          name="careerObjective"
-          value={formData.careerObjective}
-          onChange={handleInputChange}
-          placeholder="Career Objective / Professional Bio"
-          className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 mb-1 h-24"
-        />
-        {globallyEnhancedData?.careerObjective && (
-          <div className="mt-4 p-4 border-l-4 border-purple-400 bg-purple-50">
-            <h4 className="font-semibold text-purple-800">AI Suggestion for Summary:</h4>
-            <p className="text-gray-700 italic mt-1">{globallyEnhancedData.careerObjective}</p>
-          </div>
-        )}
-      </div>
-
-      {/* Education */}
-      <div className="p-6 border rounded-lg">
-        <h3 className="text-xl font-semibold mb-4">Education</h3>
-        {Array.isArray(formData.education) &&
-          formData.education.map((edu, index) => (
-            <div key={index} className="flex items-start gap-2 mb-4">
-              <div className="flex-grow p-4 border rounded space-y-4">
-                <div>
-                  <label htmlFor={`edu-university-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Institute Name</label>
-                  <input
-                    id={`edu-university-${index}`}
-                    name="university"
-                    value={edu.university || ""}
-                    onChange={(e) => handleEducationChange(index, e)}
-                    placeholder="e.g., University of Example"
-                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-                  />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor={`edu-degree-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Degree</label>
-                    <input
-                      id={`edu-degree-${index}`}
-                      name="degree"
-                      value={edu.degree || ""}
-                      onChange={(e) => handleEducationChange(index, e)}
-                      placeholder="e.g., B.S. in Computer Science"
-                      className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor={`edu-duration-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Start/End Date</label>
-                    <input
-                      id={`edu-duration-${index}`}
-                      name="duration"
-                      value={edu.duration || ""}
-                      onChange={(e) => handleEducationChange(index, e)}
-                      placeholder="e.g., 2020 - 2024"
-                      className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor={`edu-details-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Description <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
-                  <textarea
-                    id={`edu-details-${index}`}
-                    name="details"
-                    value={edu.details || ""}
-                    onChange={(e) => handleEducationChange(index, e)}
-                    placeholder="e.g., Relevant coursework, honors, etc."
-                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 h-20"
-                  />
-                </div>
-              </div>
-              <button onClick={() => handleDeleteEducation(index)} className="p-2 mt-4 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors h-10 w-10 flex items-center justify-center" aria-label="Delete education">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-              </button>
-            </div>
-          ))}
-        <div className="mt-4 flex justify-center">
-          <button onClick={handleAddEducation} className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            Add Education
-          </button>
-        </div>
-      </div>
-
-      {/* AI Suggestions Control */}
-      {globallyEnhancedData && (
-        <div ref={suggestionsContainerRef} className="p-6 border-2 border-dashed border-green-500 rounded-lg bg-green-50 text-center">
-          <h3 className="text-xl font-bold text-green-800">AI Suggestions Ready!</h3>
-          <p className="text-gray-600 my-3">AI has enhanced your portfolio. You can see suggestions below each section. Apply all changes or reject them.</p>
-          <div className="flex justify-center gap-4 mt-4">
-            <button onClick={acceptGlobalEnhancement} className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-              ✅ Accept All
-            </button>
-            <button onClick={rejectGlobalEnhancement} className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
-              ❌ Reject
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Skills */}
-      <div className="p-6 border rounded-lg">
-        <h3 className="text-xl font-semibold mb-4">Skills</h3>
-        <div className="flex gap-2 mb-4">
-          <input
-            type="text"
-            value={newSkill}
-            onChange={(e) => setNewSkill(e.target.value)}
-            placeholder="Add a new skill"
-            className="flex-1 p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-          />
-          <button
-            onClick={handleAddSkill}
-            className="px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-          >
-            Add Skill
-          </button>
-        </div>
-        {skillsArray.length > 0 && (
-          <div className="space-y-2">
-            {skillsArray.map((skill, index) => (
-              <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
-                <span>{skill}</span>
-                <button
-                  onClick={() => handleRemoveSkill(index)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Projects */}
-      <div className="p-6 border rounded-lg">
-        <h3 className="text-xl font-semibold mb-4">Projects</h3>
-        {Array.isArray(formData.projects) &&
-          formData.projects.map((project, index) => (
-            <div key={index} className="flex items-start gap-2 mb-4">
-              <div className="flex-grow p-4 border rounded">
-                <label htmlFor={`project-title-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Project Title</label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <input
-                    id={`project-title-${index}`}
-                    name="title"
-                    value={project.title || ""}
-                    onChange={(e) => handleProjectChange(index, e)}
-                    placeholder={`Project ${index + 1} Title`}
-                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-                  />
-                  <div className="md:col-span-2">
-                    <label htmlFor={`project-desc-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Description <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
-                    <input
-                      id={`project-desc-${index}`}
-                      name="description"
-                      value={project.description || ""}
-                      onChange={(e) => handleProjectChange(index, e)}
-                      placeholder="Description"
-                      className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-                    />
-                  </div>
-                  <div className="md:col-span-3">
-                    <label htmlFor={`project-tech-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Technologies <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
-                    <input
-                      id={`project-tech-${index}`}
-                      name="technologies"
-                      value={project.technologies || ""}
-                      onChange={(e) => handleProjectChange(index, e)}
-                      placeholder="e.g., React, Node.js, CSS"
-                      className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-                    />
-                  </div>
-                  <div className="md:col-span-3">
-                    <label htmlFor={`project-link-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Project Link <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
-                    <input
-                      id={`project-link-${index}`}
-                      name="link"
-                      value={project.link || ""}
-                      onChange={(e) => handleProjectChange(index, e)}
-                      placeholder="https://github.com/user/project"
-                      className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-                    />
-                  </div>
-                  {globallyEnhancedData?.projects?.[index] && (
-                    <div className="md:col-span-3 mt-2 p-3 border-l-4 border-purple-400 bg-purple-50 rounded-r-lg">
-                      <h4 className="font-semibold text-purple-800 text-sm">AI Suggestion for Project {index + 1}:</h4>
-                      <p className="text-sm text-gray-700 mt-1"><strong>Title:</strong> {globallyEnhancedData.projects[index].title}</p>
-                      <p className="text-sm text-gray-700 mt-1"><strong>Description:</strong> {globallyEnhancedData.projects[index].description}</p>
-                      <p className="text-sm text-gray-700 mt-1"><strong>Technologies:</strong> {globallyEnhancedData.projects[index].technologies}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <button
-                onClick={() => handleDeleteProject(index)}
-                className="p-2 mt-4 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors h-10 w-10 flex items-center justify-center"
-                aria-label="Delete project"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            </div>
-          ))}
-        <div className="mt-4 flex justify-center">
-          <button
-            onClick={handleAddProject}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            Add Project
-          </button>
-        </div>
-      </div>
-
-      {/* Experience */}
-      <div className="p-6 border rounded-lg">
-        <h3 className="text-xl font-semibold mb-4">Experience</h3>
-        {Array.isArray(formData.experience) &&
-          formData.experience.map((exp, index) => (
-            <div key={index} className="flex items-start gap-2 mb-4">
-              <div className="flex-grow p-4 border rounded space-y-4">
-                <div>
-                  <label htmlFor={`exp-title-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Job Title</label>
-                  <input
-                    id={`exp-title-${index}`}
-                    name="jobTitle"
-                    value={exp.jobTitle || ""}
-                    onChange={(e) => handleExperienceChange(index, e)}
-                    placeholder="Job Title"
-                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-                  />
-                </div>
-                <div>
-                  <label htmlFor={`exp-company-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Company</label>
-                  <input
-                    id={`exp-company-${index}`}
-                    name="company"
-                    value={exp.company || ""}
-                    onChange={(e) => handleExperienceChange(index, e)}
-                    placeholder="Company"
-                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-                  />
-                </div>
-                <div>
-                  <label htmlFor={`exp-duration-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Duration <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
-                  <input
-                    id={`exp-duration-${index}`}
-                    name="duration"
-                    value={exp.duration || ""}
-                    onChange={(e) => handleExperienceChange(index, e)}
-                    placeholder="e.g., Jan 2022 - Present"
-                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
-                  />
-                </div>
-                <div>
-                  <label htmlFor={`exp-res-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Responsibilities (one per line) <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
-                  <textarea
-                    id={`exp-res-${index}`}
-                    value={(exp.responsibilities || []).join("\n")}
-                    onChange={(e) => handleResponsibilitiesChange(index, e)}
-                    placeholder="Responsibility 1..."
-                    className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 h-24"
-                  />
-                </div>
-              </div>
-              <button
-                onClick={() => handleDeleteExperience(index)}
-                className="p-2 mt-4 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors h-10 w-10 flex items-center justify-center"
-                aria-label="Delete experience"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            </div>
-          ))}
-        <div className="mt-4 flex justify-center">
-          <button
-            onClick={handleAddExperience}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            Add Experience
-          </button>
-        </div>
-      </div>
-
-      {/* Achievements */}
-      <div className="p-6 border rounded-lg">
-        <h3 className="text-xl font-semibold mb-4">Achievements / Testimonials</h3>
-        {Array.isArray(formData.achievements) &&
-          formData.achievements.map((achievement, index) => (
-            <div key={index} className="flex items-start gap-2 mb-4">
-              <div className="flex-grow">
-                <label htmlFor={`achieve-quote-${index}`} className="block text-md font-semibold text-gray-800 mb-2">Testimonial / Achievement {index + 1} <span className="text-gray-500 font-normal text-sm">(autogenerated by ai if not filled)</span></label>
-                <textarea
-                  id={`achieve-quote-${index}`}
-                  name="quote"
-                  value={achievement.quote || ""}
-                  onChange={(e) => handleAchievementChange(index, e)}
-                  placeholder={`Testimonial / Achievement ${index + 1}`}
-                  className="w-full p-3 border border-gray-300 rounded-md transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 h-24"
-                />
-              </div>
-              <button
-                onClick={() => handleDeleteAchievement(index)}
-                className="p-2 mt-4 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors h-10 w-10 flex items-center justify-center"
-                aria-label="Delete testimonial"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            </div>
-          ))}
-        <div className="mt-4 flex justify-center">
-          <button
-            onClick={handleAddAchievement}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            Add Testimonial
-          </button>
-        </div>
-      </div>
-
-      <div className="p-4 border rounded-lg bg-gray-50 text-center">
-        <button
-          onClick={enhanceAllWithAI}
-          className="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-transform transform hover:scale-105 shadow-lg"
-          disabled={enhancing}
-        >
-          {enhancing ? "Enhancing..." : "✨ Enhance All with AI"}
+        <button className="px-3 py-1 border border-white/20 rounded">
+          Reject
         </button>
-        <p className="text-sm text-gray-500 mt-2">Let AI review and improve your entire portfolio content.</p>
       </div>
-
     </div>
   );
+};
+return (
+  <div className="space-y-8 text-white">
+
+    {/* AI BUTTON */}
+    <div className="p-4 bg-white/5 border border-white/10 rounded-xl text-center">
+      <button
+        onClick={enhanceAllWithAI}
+        className="px-6 py-3 bg-green-500 text-black rounded-lg hover:bg-green-400"
+        disabled={enhancing}
+      >
+        {enhancing ? "Enhancing..." : "✨ Enhance with AI"}
+      </button>
+    </div>
+
+    {/* PERSONAL DETAILS */}
+    <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
+      <h3 className="text-xl font-semibold mb-4">Personal Details</h3>
+
+      <input type="file" ref={fileInputRef} onChange={handleResumeChange} className="hidden" />
+
+      <button
+        onClick={() => fileInputRef.current.click()}
+        className="mb-4 px-5 py-2 bg-green-500 text-black rounded-lg"
+      >
+        {isParsingResume ? "Parsing..." : "📄 Upload Resume"}
+      </button>
+{/* PROFILE IMAGE */}
+<div className="mt-4">
+  <label className="block text-sm text-gray-400 mb-2">
+    Profile Image
+  </label>
+
+  <input
+    type="file"
+    onChange={handleImageChange}
+    accept="image/*"
+    className="input-dark"
+  />
+
+  {formData.image && (
+    <img
+      src={formData.image}
+      alt="preview"
+      className="mt-4 w-24 h-24 rounded-full object-cover border border-white/20"
+    />
+  )}
+</div>
+      <div className="space-y-4">
+
+        <input name="fullName" value={formData.fullName} onChange={handleInputChange} placeholder="Full Name" className="input-dark" />
+
+        {globallyEnhancedData?.fullName && (
+          <AISuggestion field="fullName" value={globallyEnhancedData.fullName} />
+        )}
+
+        <input name="email" value={formData.email} onChange={handleInputChange} placeholder="Email" className="input-dark" />
+
+        <input name="phone" value={formData.phone || ''} onChange={handleInputChange} placeholder="Phone" className="input-dark" />
+
+        <input name="portfolioLink" value={formData.portfolioLink || ''} onChange={handleInputChange} placeholder="Portfolio URL" className="input-dark" />
+
+        <input name="linkedin" value={formData.linkedin} onChange={handleInputChange} placeholder="LinkedIn" className="input-dark" />
+
+        <div className="flex gap-2">
+          <input name="github" value={formData.github} onChange={handleInputChange} placeholder="GitHub" className="input-dark flex-1" />
+          <button onClick={handleFetchRepos} className="px-4 bg-white/10 rounded-lg hover:bg-white/20">
+            Fetch
+          </button>
+        </div>
+
+        <input name="headline" value={formData.headline} onChange={handleInputChange} placeholder="Headline" className="input-dark" />
+
+        {globallyEnhancedData?.headline && (
+          <AISuggestion field="headline" value={globallyEnhancedData.headline} />
+        )}
+
+      </div>
+    </div>
+{/* 🔥 GITHUB REPOS DISPLAY */}
+{fetchedRepos.length > 0 && (
+  <div
+    ref={reposContainerRef}
+    className="mt-6 p-4 bg-white/5 border border-white/10 rounded-xl"
+  >
+    <h4 className="text-lg font-semibold mb-3">
+      Select Projects from GitHub
+    </h4>
+
+    <div className="max-h-64 overflow-y-auto space-y-2 pr-2">
+      {fetchedRepos.map((repo, index) => (
+        <div
+          key={index}
+          className="flex justify-between items-center p-3 bg-black/30 rounded border border-white/10"
+        >
+          <div>
+            <p className="font-semibold text-white">
+              {repo.title}
+            </p>
+            <p className="text-sm text-gray-400">
+              {repo.description}
+            </p>
+          </div>
+
+          <button
+            onClick={() => addRepoToProjects(repo)}
+            className="px-3 py-1 bg-green-500 text-black rounded hover:bg-green-400"
+          >
+            + Add
+          </button>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+    {/* SUMMARY */}
+    <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
+      <h3 className="text-xl font-semibold mb-4">Professional Summary</h3>
+
+      <textarea
+        name="careerObjective"
+        value={formData.careerObjective}
+        onChange={handleInputChange}
+        className="input-dark h-28"
+        placeholder="Write summary..."
+      />
+
+      {globallyEnhancedData?.careerObjective && (
+        <AISuggestion field="careerObjective" value={globallyEnhancedData.careerObjective} />
+      )}
+    </div>
+
+    {/* SKILLS */}
+<div className="p-6 bg-white/5 border border-white/10 rounded-xl">
+  <h3 className="text-xl font-semibold mb-4">Skills</h3>
+
+  {/* Add Skill */}
+  <div className="flex gap-2 mb-3">
+    <input
+      value={newSkill}
+      onChange={(e) => setNewSkill(e.target.value)}
+      className="input-dark flex-1"
+      placeholder="Add skill"
+    />
+    <button
+      onClick={handleAddSkill}
+      className="px-4 bg-green-500 text-black rounded-lg hover:bg-green-400 transition"
+    >
+      Add
+    </button>
+  </div>
+
+  {/* Existing Skills */}
+  <div className="space-y-2">
+    {skillsArray.map((s, i) => (
+      <div key={i} className="flex justify-between bg-white/5 p-2 rounded">
+        <span>{s}</span>
+        <button
+          onClick={() => handleRemoveSkill(i)}
+          className="text-red-400 hover:text-red-300"
+        >
+          Remove
+        </button>
+      </div>
+    ))}
+  </div>
+
+  {/* 🔥 AI SUGGESTION */}
+  {globallyEnhancedData?.skills && globallyEnhancedData.skills.length > 0 && (
+    <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+
+      <p className="text-yellow-400 text-sm mb-2">
+        AI Suggested Skills
+      </p>
+
+      {/* Suggested Skills List */}
+      <div className="flex flex-wrap gap-2 mb-3">
+        {/* {globallyEnhancedData.skills.map((skill, i) => (
+          <span
+            key={i}
+            className="px-3 py-1 bg-white/10 rounded-full text-sm text-gray-300"
+          >
+            {skill}
+          </span>
+        ))} */}
+        {Array.isArray(globallyEnhancedData?.skills)
+  ? globallyEnhancedData.skills.map((skill, i) => (
+      <span key={i}>{skill}</span>
+    ))
+  : typeof globallyEnhancedData?.skills === "string"
+  ? globallyEnhancedData.skills.split(",").map((skill, i) => (
+      <span key={i}>{skill.trim()}</span>
+    ))
+  : null}
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-3">
+
+        <button
+          onClick={() => {
+            setFormData(prev => ({
+              ...prev,
+              // skills: globallyEnhancedData.skills
+              skills: Array.isArray(globallyEnhancedData.skills)
+  ? globallyEnhancedData.skills
+  : globallyEnhancedData.skills.split(",").map(s => s.trim())
+            }));
+            toast.success("Skills updated with AI suggestions");
+          }}
+          className="px-4 py-2 bg-green-500 text-black rounded-lg hover:bg-green-400 transition"
+        >
+          Accept
+        </button>
+
+        <button
+          onClick={() => toast.info("Kept existing skills")}
+          className="px-4 py-2 border border-white/20 rounded-lg hover:bg-white/10 transition"
+        >
+          Reject
+        </button>
+
+      </div>
+    </div>
+  )}
+</div>
+{/* EDUCATION */}
+<div className="p-6 bg-white/5 border border-white/10 rounded-xl">
+  <h3 className="text-xl font-semibold mb-4">Education</h3>
+
+  {formData.education?.map((edu, i) => (
+    <div key={i} className="mb-4 p-4 bg-black/30 rounded">
+
+      <input
+        name="university"
+        value={edu.university || ""}
+        onChange={(e) => handleEducationChange(i, e)}
+        placeholder="University"
+        className="input-dark mb-2"
+      />
+
+      <input
+        name="degree"
+        value={edu.degree || ""}
+        onChange={(e) => handleEducationChange(i, e)}
+        placeholder="Degree"
+        className="input-dark mb-2"
+      />
+
+      <input
+        name="duration"
+        value={edu.duration || ""}
+        onChange={(e) => handleEducationChange(i, e)}
+        placeholder="Duration"
+        className="input-dark mb-2"
+      />
+
+      <textarea
+        name="details"
+        value={edu.details || ""}
+        onChange={(e) => handleEducationChange(i, e)}
+        placeholder="Details"
+        className="input-dark h-20"
+      />
+
+      <button
+        onClick={() => handleDeleteEducation(i)}
+        className="text-red-400 mt-2"
+      >
+        Delete
+      </button>
+
+    </div>
+  ))}
+
+  <button
+    onClick={handleAddEducation}
+    className="px-4 py-2 bg-white/10 rounded hover:bg-white/20"
+  >
+    + Add Education
+  </button>
+</div>
+    {/* PROJECTS */}
+    <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
+      <h3 className="text-xl font-semibold mb-4">Projects</h3>
+
+      {formData.projects?.map((p, i) => (
+        <div key={i} className="mb-4 p-4 bg-black/30 rounded">
+
+          <input name="title" value={p.title || ''} onChange={(e) => handleProjectChange(i, e)} className="input-dark mb-2" placeholder="Title" />
+
+          <input name="description" value={p.description || ''} onChange={(e) => handleProjectChange(i, e)} className="input-dark mb-2" placeholder="Description" />
+
+          {globallyEnhancedData?.projects?.[i]?.description && (
+            <AISuggestion field={`projects.${i}.description`} value={globallyEnhancedData.projects[i].description} />
+          )}
+
+          <input name="technologies" value={p.technologies || ''} onChange={(e) => handleProjectChange(i, e)} className="input-dark mb-2" placeholder="Technologies" />
+
+          <input name="link" value={p.link || ''} onChange={(e) => handleProjectChange(i, e)} className="input-dark" placeholder="Link" />
+
+          <button onClick={() => handleDeleteProject(i)} className="text-red-400 mt-2">Delete</button>
+
+        </div>
+      ))}
+
+      <button onClick={handleAddProject} className="px-4 py-2 bg-white/10 rounded hover:bg-white/20">
+        + Add Project
+      </button>
+    </div>
+{/* EXPERIENCE */}
+<div className="p-6 bg-white/5 border border-white/10 rounded-xl">
+  <h3 className="text-xl font-semibold mb-4">Experience</h3>
+
+  {Array.isArray(formData.experience) &&
+    formData.experience.map((exp, i) => (
+      <div key={i} className="mb-4 p-4 bg-black/30 rounded">
+
+        <input
+          name="jobTitle"
+          value={exp.jobTitle || ""}
+          onChange={(e) => handleExperienceChange(i, e)}
+          placeholder="Job Title"
+          className="input-dark mb-2"
+        />
+
+        <input
+          name="company"
+          value={exp.company || ""}
+          onChange={(e) => handleExperienceChange(i, e)}
+          placeholder="Company"
+          className="input-dark mb-2"
+        />
+
+        <input
+          name="duration"
+          value={exp.duration || ""}
+          onChange={(e) => handleExperienceChange(i, e)}
+          placeholder="Duration"
+          className="input-dark mb-2"
+        />
+
+        <textarea
+          value={(exp.responsibilities || []).join("\n")}
+          onChange={(e) => handleResponsibilitiesChange(i, e)}
+          placeholder="Responsibilities (one per line)"
+          className="input-dark h-24"
+        />
+
+        {/* 🔥 AI SUGGESTION */}
+        {globallyEnhancedData?.experience?.[i] && (
+          <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded">
+
+            <p className="text-yellow-400 text-sm mb-2">
+              AI Suggestion
+            </p>
+
+            <p className="text-gray-300 text-sm">
+              <strong>Role:</strong> {globallyEnhancedData.experience[i].jobTitle}
+            </p>
+
+            <p className="text-gray-300 text-sm">
+              <strong>Company:</strong> {globallyEnhancedData.experience[i].company}
+            </p>
+
+            <p className="text-gray-300 text-sm">
+              <strong>Duration:</strong> {globallyEnhancedData.experience[i].duration}
+            </p>
+
+            <p className="text-gray-300 text-sm mb-2">
+              <strong>Responsibilities:</strong><br />
+              {(globallyEnhancedData.experience[i].responsibilities || []).join(", ")}
+            </p>
+
+            <div className="flex gap-2">
+
+              <button
+                onClick={() => {
+                  const updated = [...formData.experience];
+                  updated[i] = globallyEnhancedData.experience[i];
+                  setFormData({ ...formData, experience: updated });
+                  toast.success("Experience updated");
+                }}
+                className="px-3 py-1 bg-green-500 text-black rounded"
+              >
+                Accept
+              </button>
+
+              <button
+                onClick={() => toast.info("Kept existing experience")}
+                className="px-3 py-1 border border-white/20 rounded"
+              >
+                Reject
+              </button>
+
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={() => handleDeleteExperience(i)}
+          className="text-red-400 mt-2"
+        >
+          Delete
+        </button>
+
+      </div>
+    ))}
+
+  <button
+    onClick={handleAddExperience}
+    className="px-4 py-2 bg-white/10 rounded hover:bg-white/20"
+  >
+    + Add Experience
+  </button>
+</div>
+{/* ACHIEVEMENTS */}
+<div className="p-6 bg-white/5 border border-white/10 rounded-xl">
+  <h3 className="text-xl font-semibold mb-4">Achievements</h3>
+
+  {formData.achievements?.map((a, i) => (
+    <div key={i} className="mb-4">
+
+      <textarea
+        name="quote"
+        value={a.quote || ""}
+        onChange={(e) => handleAchievementChange(i, e)}
+        placeholder="Achievement"
+        className="input-dark h-20"
+      />
+
+      <button
+        onClick={() => handleDeleteAchievement(i)}
+        className="text-red-400 mt-2"
+      >
+        Delete
+      </button>
+
+    </div>
+  ))}
+
+  <button
+    onClick={handleAddAchievement}
+    className="px-4 py-2 bg-white/10 rounded hover:bg-white/20"
+  >
+    + Add Achievement
+  </button>
+</div>
+  </div>
+  
+  
+);
 };
 
 export default FormInputs;

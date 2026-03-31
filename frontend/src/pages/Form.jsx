@@ -233,101 +233,139 @@ function Form() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-5xl mx-auto">
-        <div className="mb-6 flex justify-start">
-          <button onClick={() => navigate('/templates')}
-            className="px-6 py-3 border-2 border-gray-600 text-gray-600 rounded-lg hover:bg-gray-600 hover:text-white transition duration-300 font-medium flex items-center cursor-pointer">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-            Back to Templates
+  <div className="min-h-screen bg-[#0a0a0a] p-6 relative overflow-hidden">
+
+    {/* Glow */}
+    <div className="absolute w-[500px] h-[500px] bg-green-500/10 blur-[120px] top-[-100px] left-[-100px]" />
+    <div className="absolute w-[400px] h-[400px] bg-yellow-500/10 blur-[120px] bottom-[-100px] right-[-100px]" />
+
+    <div className="max-w-5xl mx-auto z-10 relative">
+
+      {/* BACK BUTTON */}
+      <div className="mb-6">
+        <button
+          onClick={() => navigate('/templates')}
+          className="px-6 py-2 border border-white/20 text-white rounded-lg hover:bg-white/10 transition"
+        >
+          ← Back to Templates
+        </button>
+      </div>
+
+      {/* FORM CARD */}
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-lg">
+        <h1 className="text-3xl font-bold text-white mb-6">
+          Portfolio Details
+        </h1>
+
+        <FormInputs
+          formData={formData}
+          setFormData={setFormData}
+          uploadResume={uploadResume}
+          loading={loading}
+        />
+      </div>
+
+      {/* ACTIONS */}
+      <div className="mt-8 bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl">
+
+        <h2 className="text-2xl font-bold text-white text-center mb-6">
+          Actions
+        </h2>
+
+        {/* SAVE */}
+        <div className="mb-6 text-center">
+          <button
+            onClick={handleSubmit}
+            className="px-6 py-3 bg-green-500 text-black rounded-lg hover:bg-green-400 transition shadow-[0_0_15px_rgba(34,197,94,0.4)]"
+          >
+            Save Details
           </button>
         </div>
-        <div className="bg-white p-8 rounded-xl shadow-lg relative">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">Portfolio Details</h1>
-          <FormInputs formData={formData} setFormData={setFormData} uploadResume={uploadResume} loading={loading} />
-        </div>
 
-        <div className="mt-8 p-6 bg-white rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold text-center mb-6">Actions</h2>
+        {/* GRID */}
+        <div className="grid md:grid-cols-2 gap-6">
 
-          {/* Common Actions */}
-          <div className="mb-6 p-4 border rounded-lg bg-gray-50">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">Common Actions</h3>
-            <div className="flex flex-wrap gap-4 justify-center">
+          {/* PORTFOLIO */}
+          <div className="p-5 rounded-xl bg-white/5 border border-white/10">
+
+            <h3 className="text-lg font-semibold text-white mb-4 text-center">
+              Portfolio Website
+            </h3>
+
+            <div className="space-y-3">
+
               <button
-                className="flex items-center justify-center px-4 py-3 text-white bg-gray-700 rounded-lg hover:bg-gray-800 transition cursor-pointer"
-                onClick={handleSubmit}
+                onClick={downloadHtmlFile}
+                className="w-full py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition"
               >
-                💾 Save Details
+                Download HTML
               </button>
+
+              <button
+                onClick={previewInNewTab}
+                className="w-full py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition"
+              >
+                Preview
+              </button>
+
+              <button
+                onClick={createAndNavigate}
+                className="w-full py-3 bg-green-500 text-black rounded-lg hover:bg-green-400 transition"
+              >
+                Create Portfolio
+              </button>
+
+              <button
+                onClick={() => navigate('/templates')}
+                className="w-full py-3 border border-white/20 text-white rounded-lg hover:bg-white/10 transition"
+              >
+                Change Template
+              </button>
+
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Portfolio Website Section */}
-            <div className="p-4 border rounded-lg bg-blue-50">
-              <h3 className="text-lg font-semibold text-blue-800 mb-4 text-center">Portfolio Website</h3>
-              <div className="space-y-3">
-                <button
-                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition cursor-pointer"
-                  onClick={downloadHtmlFile}
-                >
-                  📄 Download HTML
-                </button>
-                <button
-                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition cursor-pointer"
-                  onClick={previewInNewTab}
-                >
-                  👁️ Preview in New Tab
-                </button>
-                <button
-                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-green-500 rounded-lg hover:bg-green-600 transition cursor-pointer"
-                  onClick={createAndNavigate}
-                >
-                  ✨ Create Portfolio
-                </button>
-                <button
-                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-purple-500 rounded-lg hover:bg-purple-600 transition cursor-pointer"
-                  onClick={() => navigate('/templates')}
-                >
-                  🎨 Change Template
-                </button>
-              </div>
-            </div>
+          {/* RESUME */}
+          <div className="p-5 rounded-xl bg-white/5 border border-white/10">
 
-            {/* Resume Section */}
-            <div className="p-4 border rounded-lg bg-green-50">
-              <h3 className="text-lg font-semibold text-green-800 mb-4 text-center">ATS Resume</h3>
-              <div className="space-y-3">
-                <button
-                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-red-500 rounded-lg hover:bg-red-600 transition cursor-pointer"
-                  onClick={()=>navigate('/resume-templates')}
-                >
-                  📄 Download PDF
-                </button>
-                <button
-                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition cursor-pointer"
-                  onClick={()=>navigate('/resume-templates')}
-                >
-                  📄 Download DOCX
-                </button>
-                <button
-                  className="w-full flex items-center justify-center px-4 py-3 text-white bg-teal-500 rounded-lg hover:bg-teal-600 transition cursor-pointer"
-                  onClick={() => navigate('/resume-templates')}
-                >
-                  📄 Create Resume
-                </button>
-              </div>
+            <h3 className="text-lg font-semibold text-white mb-4 text-center">
+              Resume
+            </h3>
+
+            <div className="space-y-3">
+
+              <button
+                onClick={() => navigate('/resume-templates')}
+                className="w-full py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition"
+              >
+                Download PDF
+              </button>
+
+              <button
+                onClick={() => navigate('/resume-templates')}
+                className="w-full py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition"
+              >
+                Download DOCX
+              </button>
+
+              <button
+                onClick={() => navigate('/resume-templates')}
+                className="w-full py-3 bg-yellow-400 text-black rounded-lg hover:bg-yellow-300 transition"
+              >
+                Create Resume
+              </button>
+
             </div>
           </div>
+
         </div>
-      </div><Chatbot />
-      <Footer />
+      </div>
     </div>
-    
-  );
+
+    <Chatbot />
+    <Footer />
+  </div>
+);
   
 }
 
