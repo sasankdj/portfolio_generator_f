@@ -16,7 +16,7 @@ export default function Deployment() {
   const [deployZip, setDeployZip] = useState(null);
   const [isVercelConnected, setIsVercelConnected] = useState(false);
   const [isNetlifyConnected, setIsNetlifyConnected] = useState(false);
-  const { isDeploying: isVercelDeploying, deployedUrl: vercelDeployedUrl, handleVercelDeploy } = useVercelDeploy();
+  // const { isDeploying: isVercelDeploying, deployedUrl: vercelDeployedUrl, handleVercelDeploy } = useVercelDeploy();
   const { isDeploying: isNetlifyDeploying, deployedUrl: netlifyDeployedUrl, handleNetlifyDeploy } = useNetlifyDeploy();
 
   useEffect(() => {
@@ -49,27 +49,27 @@ export default function Deployment() {
     checkConnections();
   }, [user, user?.token]);
 
-  const handleConnectVercel = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/vercel/init`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${user.token}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.authUrl) {
-          window.location.href = data.authUrl;
-        }
-      } else if (response.status === 401) {
-        console.error('Unauthorized: Could not initiate Vercel connection.');
-        // Optionally, redirect to login or show a toast message
-      }
-    } catch (error) {
-      console.error('Error initiating Vercel OAuth:', error);
-    }
-  };
+  // const handleConnectVercel = async () => {
+  //   try {
+  //     const response = await fetch(`${API_BASE_URL}/api/auth/vercel/init`, {
+  //       method: 'GET',
+  //       headers: {
+  //         'Authorization': `Bearer ${user.token}`,
+  //       },
+  //     });
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       if (data.authUrl) {
+  //         window.location.href = data.authUrl;
+  //       }
+  //     } else if (response.status === 401) {
+  //       console.error('Unauthorized: Could not initiate Vercel connection.');
+  //       // Optionally, redirect to login or show a toast message
+  //     }
+  //   } catch (error) {
+  //     console.error('Error initiating Vercel OAuth:', error);
+  //   }
+  // };
 
   const handleNetlifyManualDeploy = async () => {
     if (!deployZip) {
@@ -105,13 +105,13 @@ export default function Deployment() {
 
 
 
-  const handleDeployClick = () => {
-    if (!isVercelConnected) {
-      handleConnectVercel();
-    } else {
-      handleVercelDeploy(userDetails.template);
-    }
-  };
+  // const handleDeployClick = () => {
+  //   if (!isVercelConnected) {
+  //     handleConnectVercel();
+  //   } else {
+  //     handleVercelDeploy(userDetails.template);
+  //   }
+  // };
 
   const handleConnectNetlify = async () => {
     try {
@@ -147,123 +147,148 @@ export default function Deployment() {
     return <Navigate to="/login" replace />;
   }
 
-  return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #296B9A 0%, #99B5D0 100%)' }}>
-     
-     
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Title and Actions */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 text-white">
-          <div className="mb-4 lg:mb-0">
-            <h2 className="text-3xl font-bold mb-2">Deploy Your Portfolio</h2>
-            <p className="text-lg text-gray-200 max-w-2xl">
-              Follow the simple steps below to host your generated portfolio on Netlify for free.
+return (
+  <div className="min-h-screen bg-[#0a0a0a] text-white relative overflow-hidden">
+
+    {/* 🔥 GLOBAL GLOW */}
+    <div className="absolute w-[500px] h-[500px] bg-green-500/10 blur-[120px] top-[-100px] left-[-100px]" />
+    <div className="absolute w-[400px] h-[400px] bg-yellow-500/10 blur-[120px] bottom-[-100px] right-[-100px]" />
+
+    <main className="relative z-10 max-w-7xl mx-auto px-6 py-10">
+
+      {/* HEADER */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-12">
+        <div className="mb-4 lg:mb-0">
+          <h2 className="text-4xl font-bold mb-2">
+            Deploy Your <span className="text-green-400">Portfolio</span>
+          </h2>
+          <p className="text-gray-400 max-w-2xl">
+            Launch your portfolio online instantly with one click 🚀
+          </p>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm"
+          >
+            ← Back
+          </button>
+
+          <button
+            onClick={() => navigate('/form')}
+            className="px-6 py-2 bg-green-500 text-black rounded-lg font-medium hover:bg-green-400"
+          >
+            Edit Portfolio
+          </button>
+        </div>
+      </div>
+
+      {/* ONE CLICK DEPLOY */}
+      <div className="p-6 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-lg mb-10">
+
+        <h3 className="text-2xl font-semibold mb-6">
+          One-Click Deployment
+        </h3>
+
+        <div className="grid md:grid-cols-2 gap-6">
+
+          {/* NETLIFY */}
+          <div className="p-6 rounded-xl bg-white/5 border border-white/10 hover:shadow-green-500/20 transition">
+
+            <div className="flex items-center gap-3 mb-4">
+              <UploadCloud className="text-green-400" />
+              <h4 className="text-lg font-semibold">Netlify</h4>
+            </div>
+
+            <p className="text-gray-400 text-sm mb-6">
+              Deploy your portfolio instantly with one click.
             </p>
-          </div>
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="px-4 py-2 bg-gray-100 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-colors cursor-pointer"
-            >
-              ← Back
-            </button>
-            <button
-              onClick={() => navigate('/form')}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition-colors cursor-pointer"
-            >
-              ✏️ Edit Portfolio
-            </button>
-          </div>
-        </div>
 
-       
-        {/* One-Click Deployment */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 mb-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">One-Click Deployment</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Vercel Instructions */}
-            
-
-            {/* Netlify Instructions */}
-            <div className="bg-gray-50 p-6 rounded-lg border-2 border-dashed border-cyan-500 shadow-lg">
-              <div className="flex items-center gap-3 mb-4">
-                <UploadCloud className="w-6 h-6 text-cyan-600" />
-                <h4 className="text-xl font-semibold text-gray-800">Deploy with Netlify</h4>
-              </div>
-              <p className="text-gray-600 mb-4">
-                Instantly deploy your portfolio to Netlify with one click. No manual setup required.
-              </p>
-              {!isNetlifyConnected && (
-                <button
-                  onClick={handleConnectNetlify}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-cyan-600 text-white rounded-lg font-semibold hover:bg-cyan-700 transition-colors cursor-pointer mb-2"
-                >
-                  <Link size={20} /> Connect Netlify Account
-                </button>
-              )}
+            {!isNetlifyConnected && (
               <button
-                onClick={handleNetlifyDeployClick}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-cyan-600 text-white rounded-lg font-semibold hover:bg-cyan-700 transition-colors cursor-pointer disabled:bg-gray-400"
-                disabled={isNetlifyDeploying || !isNetlifyConnected}
+                onClick={handleConnectNetlify}
+                className="w-full mb-3 px-6 py-3 bg-yellow-400 text-black rounded-lg font-medium hover:bg-yellow-300 flex items-center justify-center gap-2"
               >
-                {isNetlifyDeploying ? <Loader size={20} className="animate-spin" /> : <UploadCloud size={20} />} {isNetlifyDeploying ? 'Deploying...' : (isNetlifyConnected ? 'Deploy to Netlify' : 'Connect Netlify First')}
+                <Link size={16} /> Connect Account
               </button>
-              {netlifyDeployedUrl && (
-                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="font-semibold text-green-800">Your site is live!</p>
-                  <a href={netlifyDeployedUrl} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline break-all flex items-center justify-center gap-2">
-                    {netlifyDeployedUrl} <ExternalLink size={16} />
-                  </a>
-                </div>
+            )}
+
+            <button
+              onClick={handleNetlifyDeployClick}
+              disabled={isNetlifyDeploying || !isNetlifyConnected}
+              className="w-full px-6 py-3 bg-green-500 text-black rounded-lg font-medium hover:bg-green-400 disabled:opacity-40 flex items-center justify-center gap-2"
+            >
+              {isNetlifyDeploying ? (
+                <Loader size={16} className="animate-spin" />
+              ) : (
+                <UploadCloud size={16} />
               )}
-            </div>
-          </div>
-        </div>
+              {isNetlifyDeploying
+                ? "Deploying..."
+                : "Deploy"}
+            </button>
 
-        {/* Manual Deployment Instructions */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 mb-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">How to Host Your Portfolio Manually</h3>
-          <div className="flex justify-center">
-            {/* Netlify Instructions */}
-            <div className="bg-gray-50 p-6 rounded-lg border-2 border-dashed border-cyan-500 shadow-lg max-w-lg">
-              <div className="flex items-center gap-3 mb-4">
-                <UploadCloud className="w-6 h-6 text-cyan-600" />
-                <h4 className="text-xl font-semibold text-gray-800">Deploy with Netlify</h4>
+            {netlifyDeployedUrl && (
+              <div className="mt-4 text-sm">
+                <p className="text-green-400 mb-1">🚀 Live URL</p>
+                <a
+                  href={netlifyDeployedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="break-all flex items-center gap-2 hover:underline text-gray-300"
+                >
+                  {netlifyDeployedUrl} <ExternalLink size={14} />
+                </a>
               </div>
-              <ol className="list-decimal list-inside space-y-3 text-gray-600">
-                <li>
-                  <strong>Download Portfolio:</strong> Get the `portfolio.zip` file from the success page or the form page.
-                </li>
-                <li>
-                  <strong>Sign Up & Deploy:</strong> Click the button below to go to Netlify. Sign up for a free account if you don't have one.
-                  <a href="https://app.netlify.com/signup" target="_blank" rel="noopener noreferrer" className="mt-3 flex items-center justify-center gap-2 px-6 py-3 bg-cyan-600 text-white rounded-lg font-semibold hover:bg-cyan-700 transition-colors">
-                    <UploadCloud size={20} /> Go to Netlify to Deploy
-                  </a>
-                </li>
-                 <input type="file" accept=".zip" onChange={(e) => setDeployZip(e.target.files[0])} />
-                <button onClick={handleNetlifyManualDeploy} disabled={!deployZip} className="cursor-pointer">
-                  Deploy to Netlify</button>
-                <li>
-                  <strong>Drag & Drop:</strong> Log in to your Netlify dashboard. In the "Sites" section, you'll see an area to drag and drop your site. Simply drag and drop the downloaded `portfolio.zip` file into this area. Netlify will automatically unzip and deploy it.
-                </li>
-                <li>
-                  <strong>Done!</strong> Netlify will instantly deploy your site and give you a live URL. You can customize the domain name in the site settings.
-                </li>
-              </ol>
-            </div>
+            )}
           </div>
-        </div>
-      </main>
 
-      {/* Footer */}
-      <footer className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-white font-bold text-xl">
-            © 2025 Portfolio
-          </div>
         </div>
-      </footer>
-    </div>
-  );
+      </div>
+
+      {/* MANUAL DEPLOY */}
+      <div className="p-6 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-lg">
+
+        <h3 className="text-2xl font-semibold mb-6">
+          Manual Deployment
+        </h3>
+
+        <div className="max-w-xl">
+
+          <ol className="space-y-4 text-gray-400 text-sm mb-6">
+            <li>1. Download your portfolio ZIP</li>
+            <li>2. Go to Netlify</li>
+            <li>3. Drag & drop ZIP file</li>
+            <li>4. Your site goes live instantly 🚀</li>
+          </ol>
+
+          <div className="flex flex-col gap-3">
+
+            <input
+              type="file"
+              accept=".zip"
+              onChange={(e) => setDeployZip(e.target.files[0])}
+              className="text-sm"
+            />
+
+            <button
+              onClick={handleNetlifyManualDeploy}
+              disabled={!deployZip}
+              className="px-6 py-3 bg-yellow-400 text-black rounded-lg font-medium hover:bg-yellow-300 disabled:opacity-40"
+            >
+              Upload & Deploy
+            </button>
+
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+
+    
+
+  </div>
+);
 }

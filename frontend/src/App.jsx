@@ -24,6 +24,7 @@ import ResumeTemplates from './pages/ResumeTemplates'
 import NotLoggedInHomePage from './pages/NotLoggedInHomePage'
 import NetlifyCallback from './pages/NetlifyCallback'
 import VercelCallback from './pages/VercelCallback'
+import Footer from './components/Footer'
 const App = () => {
   return (
     <Router>
@@ -56,6 +57,7 @@ const App = () => {
         </Route>
       </Routes>
         <Analytics />
+        <Footer />
     </Router>
   )
 }
