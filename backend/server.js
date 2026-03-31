@@ -196,10 +196,14 @@ app.post('/api/deploy/netlify', protect, upload.single('zipFile'), async (req, r
 const oAuth2Client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET);
 
 // --- Database Connection ---
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected successfully.'))
-  .catch(err => console.error('MongoDB connection error:', err));
-console.log("MONGO_URI:", process.env.MONGO_URI);
+mongoose.connect(process.env.MONGO_URI, {
+  bufferCommands: false,
+  serverSelectionTimeoutMS: 30000,
+  socketTimeoutMS: 45000,
+  family: 4, // ✅ CRITICAL FIX
+})
+.then(() => console.log('MongoDB connected successfully.'))
+.catch(err => console.error('MongoDB connection error:', err));
 // Middleware
 
 app.use(express.json({ limit: '50mb' }));
