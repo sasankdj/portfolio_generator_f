@@ -17,15 +17,21 @@ function Form() {
 
   const selectedTemplateId = state?.selectedTemplate || userDetails.template || 'classic';
 
-  const [formData, setFormData] = useState(userDetails);
+  // const [formData, setFormData] = useState(userDetails);
+  const [formData, setFormData] = useState(() => {
+  const saved = localStorage.getItem("portfolioFormData");
+  return saved ? JSON.parse(saved) : userDetails;
+});
 
-  useEffect(() => {
-    setFormData(prevFormData => ({
-      ...userDetails,
-      image: userDetails.image || prevFormData.image,
-    }));
-  }, [userDetails]);
-
+  // useEffect(() => {
+  //   setFormData(prevFormData => ({
+  //     ...userDetails,
+  //     image: userDetails.image || prevFormData.image,
+  //   }));
+  // }, [userDetails]);
+useEffect(() => {
+  localStorage.setItem("portfolioFormData", JSON.stringify(formData));
+}, [formData]);
   useEffect(() => {
     // This effect runs when the component mounts or `state` changes.
     // If we just came from signup/login with the intent to create, do it now.
@@ -231,6 +237,35 @@ function Form() {
       toast.error('Error downloading portfolio DOCX. Please try again.');
     }
   };
+const clearForm = () => {
+  const confirmClear = window.confirm("Are you sure you want to clear all data?");
+  
+  if (!confirmClear) return;
+
+  const emptyData = {
+    fullName: "",
+    email: "",
+    phone: "",
+    portfolioLink: "",
+    linkedin: "",
+    github: "",
+    headline: "",
+    careerObjective: "",
+    skills: [],
+    projects: [],
+    experience: [],
+    education: [],
+    achievements: [],
+    image: ""
+  };
+
+  setFormData(emptyData);
+
+  // 🔥 remove from localStorage
+  localStorage.removeItem("portfolioFormData");
+
+  toast.info("Form cleared successfully 🧹");
+};
 
   return (
   <div className="min-h-screen bg-[#0a0a0a] p-6 relative overflow-hidden">
@@ -281,7 +316,14 @@ function Form() {
             Save Details
           </button>
         </div>
-
+      <div className="mb-6 text-center">
+  <button
+    onClick={clearForm}
+    className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-400 transition"
+  >
+    Clear Form
+  </button>
+</div>
         {/* GRID */}
         <div className="grid md:grid-cols-2 gap-6">
 

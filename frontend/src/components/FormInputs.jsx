@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+
+import React, { useState, useRef, useEffect} from "react";
 import { toast } from "react-toastify";
 import { usePortfolio } from "./PortfolioContext";
 
@@ -16,7 +17,7 @@ const FormInputs = ({ formData, setFormData }) => {
   const [globallyEnhancedData, setGloballyEnhancedData] = useState(null);
   const [newSkill, setNewSkill] = useState('');
 
-  // Normalize skills to array, filter out empty strings
+   // Normalize skills to array, filter out empty strings
   const skillsArray = Array.isArray(formData.skills) ? formData.skills.filter(skill => skill.trim() !== '') : (formData.skills ? formData.skills.split(',').map(s => s.trim()).filter(s => s.trim() !== '') : []);
 
   const handleAddSkill = () => {
