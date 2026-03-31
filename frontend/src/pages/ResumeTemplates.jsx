@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Eye, Check, Download } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { usePortfolio } from '../components/PortfolioContext';
-import { toast } from 'react-toastify';
-import Resume1Preview from '../resumes/resume1.html?raw'; // Using the same for preview
-import Resume2Preview from '../resumes/resume2.html?raw'; // New template preview
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Eye, Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { usePortfolio } from "../components/PortfolioContext";
+import { toast } from "react-toastify";
+import Resume1Preview from "../resumes/resume1.html?raw";
+import Resume2Preview from "../resumes/resume2.html?raw";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -17,22 +17,20 @@ export default function ResumeTemplates() {
 
   const templates = [
     {
-      id: 'resume1',
-      name: 'Classic Resume',
-      description: 'A clean and professional ATS-friendly resume template.',
-      icon: '📄',
+      id: "resume1",
+      name: "Classic Resume",
+      description:
+        "A clean and professional ATS-friendly resume template.",
+      icon: "📄",
       content: Resume1Preview,
-      gradient: 'from-gray-700 to-gray-900',
-      previewGradient: 'from-gray-200 to-gray-400',
     },
     {
-      id: 'resume2',
-      name: 'Modern Resume',
-      description: 'A sleek and contemporary resume template with a clean layout.',
-      icon: '📋',
+      id: "resume2",
+      name: "Modern Resume",
+      description:
+        "A sleek and contemporary resume template with a clean layout.",
+      icon: "📋",
       content: Resume2Preview,
-      gradient: 'from-blue-700 to-blue-900',
-      previewGradient: 'from-blue-200 to-blue-400',
     },
   ];
 
@@ -46,124 +44,166 @@ export default function ResumeTemplates() {
 
   const handleUseTemplate = async () => {
     if (!selectedTemplate) {
-      toast.error('Please select a template first.');
+      toast.error("Please select a template first.");
       return;
     }
 
-    // Save details to backend before creating resume
     await saveUserDetails(userDetails);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/generate-resume`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          formData: userDetails,
-          template: selectedTemplate,
-        }),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/api/generate-resume`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            formData: userDetails,
+            template: selectedTemplate,
+          }),
+        }
+      );
 
-      if (!response.ok) {
-        throw new Error('Failed to generate resume');
-      }
+      if (!response.ok) throw new Error("Failed to generate resume");
 
       const data = await response.json();
 
-      toast.success('Resume created successfully!');
-      navigate('/resume-success', { state: { resumeHtml: data.html, template: selectedTemplate } });
+      toast.success("Resume created successfully!");
+      navigate("/resume-success", {
+        state: { resumeHtml: data.html, template: selectedTemplate },
+      });
     } catch (error) {
-      console.error('Error creating resume:', error);
-      toast.error('Error creating resume. Please try again.');
+      console.error(error);
+      toast.error("Error creating resume.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-100 font-sans">
+    <div className="min-h-screen bg-[#0a0a0a] text-white relative overflow-hidden px-6 py-10">
+
+      {/* 🔥 Background Glow */}
+      <div className="absolute w-[500px] h-[500px] bg-green-500/10 blur-[120px] top-[-100px] left-[-100px]" />
+      <div className="absolute w-[400px] h-[400px] bg-yellow-500/10 blur-[120px] bottom-[-100px] right-[-100px]" />
+
+      {/* HERO */}
       <motion.div
-        initial={{ y: 40, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.7 }}
-        className="relative mx-6 md:mx-12 mt-8 rounded-3xl bg-gradient-to-r from-gray-700 via-gray-800 to-black p-12 shadow-2xl"
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center max-w-4xl mx-auto mb-16 relative z-10"
       >
-        <div className="relative z-10 max-w-4xl mx-auto text-center text-white">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">Choose Your Resume Template</h1>
-          <p className="text-xl md:text-2xl font-light opacity-90">Select a template to generate your professional resume.</p>
-        </div>
+        <h1 className="text-4xl md:text-6xl font-bold mb-6">
+          Choose Your <span className="text-green-400">Resume</span>
+        </h1>
+        <p className="text-gray-400 text-lg">
+          Pick a template and generate a professional resume instantly.
+        </p>
       </motion.div>
 
+      {/* PREVIEW MODAL */}
       {previewTemplate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl"
+            className="bg-[#0f0f0f] rounded-2xl w-full max-w-5xl overflow-hidden border border-white/10"
           >
-            <div className="flex justify-between items-center p-6 border-b">
-              <h3 className="text-2xl font-bold text-gray-800">Preview: {previewTemplate.name}</h3>
-              <button onClick={() => setPreviewTemplate(null)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+            <div className="flex justify-between items-center p-5 border-b border-white/10">
+              <h3 className="text-xl font-semibold">
+                {previewTemplate.name}
+              </h3>
+              <button
+                onClick={() => setPreviewTemplate(null)}
+                className="text-gray-400 hover:text-white text-xl"
+              >
+                ×
+              </button>
             </div>
-            <div className="h-[70vh] overflow-auto">
-              <iframe srcDoc={previewTemplate.content} className="w-full h-full border-0" title={`Preview of ${previewTemplate.name}`} />
+
+            <div className="h-[70vh]">
+              <iframe
+                srcDoc={previewTemplate.content}
+                className="w-full h-full border-0 bg-white"
+                title="preview"
+              />
             </div>
           </motion.div>
         </div>
       )}
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
-          {templates.map((template, index) => (
-            <motion.div
-              key={template.id}
-              initial={{ y: 40, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
-              whileHover={{ scale: 1.02, y: -5 }}
-              className="group bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 overflow-hidden"
-            >
-              <div className={`h-48 bg-gradient-to-br ${template.previewGradient} relative p-8 flex items-center justify-center`}>
-                <div className="text-center">
-                  <div className="text-6xl mb-4">{template.icon}</div>
-                  <div className={`inline-block px-6 py-3 bg-gradient-to-r ${template.gradient} text-white rounded-full text-lg font-semibold shadow-lg`}>
-                    {template.name}
-                  </div>
-                </div>
-              </div>
-              <div className="p-8">
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">{template.name}</h3>
-                <p className="text-gray-600 mb-6">{template.description}</p>
-                <div className="flex space-x-4">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 border rounded-xl font-medium"
-                    onClick={() => handlePreview(template)}
-                  >
-                    <Eye className="w-4 h-4" /> Preview
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                    className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium text-white ${selectedTemplate === template.id ? 'bg-green-500' : 'bg-blue-500'}`}
-                    onClick={() => handleSelect(template.id)}
-                  >
-                    {selectedTemplate === template.id ? <Check className="w-4 h-4" /> : ''}
-                    {selectedTemplate === template.id ? 'Selected' : 'Select'}
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+      {/* TEMPLATE GRID */}
+      <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto relative z-10">
 
-        <div className="text-center">
-          <motion.button
-            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-            onClick={handleUseTemplate}
-            disabled={!selectedTemplate}
-            className="px-8 py-4 rounded-lg text-lg font-medium transition-all duration-300 bg-gradient-to-r from-green-500 to-teal-500 text-white disabled:bg-gray-300 disabled:cursor-not-allowed"
+        {templates.map((template, i) => (
+          <motion.div
+            key={template.id}
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            whileHover={{ scale: 1.05, y: -8 }}
+            className="p-6 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-lg hover:shadow-green-500/20 transition-all"
           >
-            Create Resume
-          </motion.button>
-        </div>
-      </main>
+            {/* ICON */}
+            <div className="text-5xl mb-4">{template.icon}</div>
+
+            <h3 className="text-xl font-semibold mb-2">
+              {template.name}
+            </h3>
+
+            <p className="text-gray-400 text-sm mb-6">
+              {template.description}
+            </p>
+
+            <div className="flex gap-4">
+
+              {/* PREVIEW */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handlePreview(template)}
+                className="flex-1 px-4 py-3 rounded-lg border border-white/20 text-sm flex items-center justify-center gap-2 hover:bg-white/10"
+              >
+                <Eye className="w-4 h-4" /> Preview
+              </motion.button>
+
+              {/* SELECT */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleSelect(template.id)}
+                className={`flex-1 px-4 py-3 rounded-lg text-sm flex items-center justify-center gap-2 font-medium transition-all
+                ${
+                  selectedTemplate === template.id
+                    ? "bg-green-500 text-black"
+                    : "bg-white/10 hover:bg-white/20"
+                }`}
+              >
+                {selectedTemplate === template.id && (
+                  <Check className="w-4 h-4" />
+                )}
+                {selectedTemplate === template.id
+                  ? "Selected"
+                  : "Select"}
+              </motion.button>
+
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <div className="text-center mt-16 relative z-10">
+        <motion.button
+          whileHover={{
+            scale: 1.05,
+            boxShadow: "0 0 25px rgba(34,197,94,0.4)",
+          }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleUseTemplate}
+          disabled={!selectedTemplate}
+          className="px-8 py-4 rounded-full bg-green-500 text-black font-semibold text-lg disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Create Resume
+        </motion.button>
+      </div>
     </div>
   );
 }
