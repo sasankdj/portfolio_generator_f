@@ -1,3 +1,4 @@
+import { connectDB } from "./db.js";
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
@@ -33,7 +34,15 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 3001; // Use environment variable for port
-
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();   // 🔥 ensures DB is ready
+    next();
+  } catch (err) {
+    console.error("DB connection failed:", err);
+    res.status(500).json({ error: "Database connection failed" });
+  }
+});
 // ✅ Define allowed origins
 const allowedOrigins = [
   "https://portfolio-generator-f.vercel.app", // production frontend
@@ -196,14 +205,14 @@ app.post('/api/deploy/netlify', protect, upload.single('zipFile'), async (req, r
 const oAuth2Client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET);
 
 // --- Database Connection ---
-mongoose.connect(process.env.MONGO_URI, {
-  bufferCommands: false,
-  serverSelectionTimeoutMS: 30000,
-  socketTimeoutMS: 45000,
-  family: 4, // ✅ CRITICAL FIX
-})
-.then(() => console.log('MongoDB connected successfully.'))
-.catch(err => console.error('MongoDB connection error:', err));
+// mongoose.connect(process.env.MONGO_URI, {
+//   bufferCommands: false,
+//   serverSelectionTimeoutMS: 30000,
+//   socketTimeoutMS: 45000,
+//   family: 4, // ✅ CRITICAL FIX
+// })
+// .then(() => console.log('MongoDB connected successfully.'))
+// .catch(err => console.error('MongoDB connection error:', err));
 // Middleware
 
 app.use(express.json({ limit: '50mb' }));
