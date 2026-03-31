@@ -14,25 +14,42 @@ const Navbar = () => {
     navigate('/');
   };
 
+  // NavLink style
+  const navItemStyle = ({ isActive }) =>
+    `text-lg font-medium transition-all duration-300 ${
+      isActive ? 'text-green-400' : 'text-gray-300'
+    } hover:text-green-400`;
+
   const navLinks = (
     <>
       {isLoggedIn && (
         <>
-          <NavLink to="/home" className={({ isActive }) => `text-xl font-semibold ${isActive ? 'text-yellow-300' : 'text-white'} hover:text-yellow-300 transition-all duration-300 drop-shadow-md`}>Home</NavLink>
-          <NavLink to="/templates" className={({ isActive }) => `text-xl font-semibold ${isActive ? 'text-yellow-300' : 'text-white'} hover:text-yellow-300 transition-all duration-300 drop-shadow-md`}>Templates</NavLink>
+          <NavLink to="/home" className={navItemStyle}>Home</NavLink>
+          <NavLink to="/templates" className={navItemStyle}>Templates</NavLink>
         </>
       )}
-      <NavLink to="/about" className={({ isActive }) => `text-xl font-semibold ${isActive ? 'text-yellow-300' : 'text-white'} hover:text-yellow-300 transition-all duration-300 drop-shadow-md`}>About Us</NavLink>
-      {/* <NavLink to="/contact" className={({ isActive }) => `text-xl font-semibold ${isActive ? 'text-yellow-300' : 'text-white'} hover:text-yellow-300 transition-all duration-300 drop-shadow-md`}>Contact Us</NavLink> */}
+
+      <NavLink to="/about" className={navItemStyle}>About</NavLink>
+
       {!isLoggedIn ? (
         <>
-          <NavLink to="/login" className={({ isActive }) => `text-xl font-semibold ${isActive ? 'text-yellow-300' : 'text-white'} hover:text-yellow-300 transition-all duration-300 drop-shadow-md`}>Login</NavLink>
-          <Link to="/signup" className="px-4 py-2 rounded-full bg-gradient-to-r from-green-500 to-teal-500 text-white font-semibold hover:from-green-600 hover:to-teal-600 transition-all duration-300 shadow-lg">
+          <NavLink to="/login" className={navItemStyle}>Login</NavLink>
+
+          {/* Signup Button */}
+          <Link
+            to="/signup"
+            className="px-5 py-2 rounded-full bg-green-500 text-black font-semibold 
+            hover:bg-green-400 transition-all duration-300 
+            shadow-[0_0_20px_rgba(34,197,94,0.4)]"
+          >
             Signup
           </Link>
         </>
       ) : (
-        <button onClick={handleLogout} className="text-xl font-semibold text-white hover:text-red-300 transition-all duration-300 drop-shadow-md">
+        <button
+          onClick={handleLogout}
+          className="text-gray-300 hover:text-red-400 transition-all duration-300"
+        >
           Logout
         </button>
       )}
@@ -41,52 +58,62 @@ const Navbar = () => {
 
   return (
     <>
+      {/* NAVBAR */}
       <motion.nav
-        initial={{ y: -100, opacity: 0 }}
+        initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="bg-gradient-to-r from-purple-400 via-blue-300 to-indigo-400 h-20 flex items-center justify-between px-4 md:px-16 shadow-xl backdrop-blur-md bg-opacity-90 sticky top-0 z-50"
+        transition={{ duration: 0.6 }}
+        className="sticky top-0 z-50 backdrop-blur-xl bg-black/70 border-b border-white/10"
       >
-        <Link to="/" className="flex items-center gap-4">
-          <motion.img
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            src="/logo.png"
-            alt="Portfolio logo"
-            className="w-14 h-14 rounded-full shadow-lg"
-          />
-          <motion.h1
-            whileHover={{ scale: 1.05 }}
-            className="text-3xl font-bold text-white drop-shadow-lg"
-          >
-            Portfolio
-          </motion.h1>
-        </Link>
+        <div className="h-20 flex items-center justify-between px-4 md:px-16">
 
-        {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-6">
-          {navLinks}
-        </div>
+          {/* LOGO */}
+          <Link to="/" className="flex items-center gap-3">
+            <motion.img
+              whileHover={{ scale: 1.1, rotate: 3 }}
+              src="/logo.png"
+              alt="Portfolio logo"
+              className="w-12 h-12 rounded-full"
+            />
 
-        {/* Mobile Menu Button */}
-        <div className="md:hidden">
-          <motion.button whileTap={{ scale: 0.9 }} onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-white">
-            {isMenuOpen ? <X size={30} /> : <Menu size={30} />}
-          </motion.button>
+            <motion.h1
+              whileHover={{ scale: 1.05 }}
+              className="text-2xl font-bold text-white tracking-wide"
+            >
+              Portfolio
+            </motion.h1>
+          </Link>
+
+          {/* DESKTOP MENU */}
+          <div className="hidden md:flex items-center gap-8">
+            {navLinks}
+          </div>
+
+          {/* MOBILE BUTTON */}
+          <div className="md:hidden">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-white"
+            >
+              {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            </motion.button>
+          </div>
         </div>
       </motion.nav>
 
-      {/* Mobile Menu */}
+      {/* MOBILE MENU */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -50 }}
+            initial={{ opacity: 0, y: -40 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="md:hidden absolute top-20 left-0 w-full bg-gradient-to-br from-purple-400 to-indigo-500 shadow-xl z-40"
+            exit={{ opacity: 0, y: -40 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden absolute top-20 left-0 w-full backdrop-blur-xl bg-black/90 border-b border-white/10 z-40"
             onClick={() => setIsMenuOpen(false)}
           >
-            <div className="flex flex-col items-center gap-6 py-8">
+            <div className="flex flex-col items-center gap-6 py-8 text-lg">
               {navLinks}
             </div>
           </motion.div>

@@ -1,7 +1,15 @@
 import React, { useEffect } from "react";
-import { Rocket, Wand2, Upload, FileText, Palette, Zap, Shield, MessageSquare } from "lucide-react";
+import {
+  Rocket,
+  Wand2,
+  Upload,
+  FileText,
+  Palette,
+  Zap,
+  Shield,
+} from "lucide-react";
 import { motion } from "framer-motion";
-import "@fontsource/itim"; // ✅ Import Itim font
+import "@fontsource/itim";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../components/AuthContext";
 
@@ -11,118 +19,142 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (isLoggedIn) {
-      navigate('/home');
+      navigate("/home");
     }
   }, [isLoggedIn, navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-50 to-indigo-100 flex flex-col items-center justify-between px-6 py-8 font-itim">
-      {/* Hero Section */}
+    <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-between px-6 py-8 font-itim relative overflow-hidden">
+
+      {/* subtle background glow */}
+      <div className="absolute w-[500px] h-[500px] bg-green-500/10 blur-[120px] top-[-100px] left-[-100px]" />
+      <div className="absolute w-[400px] h-[400px] bg-yellow-500/10 blur-[120px] bottom-[-100px] right-[-100px]" />
+
+      {/* HERO */}
       <motion.div
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.7, delay: 0.2 }}
-        className="flex flex-col items-center text-center mt-12 max-w-4xl"
+        transition={{ duration: 0.7 }}
+        className="flex flex-col items-center text-center mt-12 max-w-4xl z-10"
       >
         <motion.h1
-          className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-6"
-          initial={{ scale: 0.8 }}
+          className="text-4xl md:text-6xl font-bold mb-6 leading-tight"
+          initial={{ scale: 0.9 }}
           animate={{ scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
         >
-          CREATE A PROFESSIONAL PORTFOLIO IN MINUTES
+          CREATE A <span className="text-green-400">PREMIUM</span> PORTFOLIO  
+          <br /> IN MINUTES
         </motion.h1>
-        <p className="mt-4 text-lg md:text-xl text-gray-700 leading-relaxed">
-          Transform your career story into a stunning online portfolio with our AI-powered generator.
-          Guided steps, beautiful templates, and instant deployment. Start by logging in or creating an account.
+
+        <p className="mt-4 text-lg md:text-xl text-gray-400 leading-relaxed max-w-2xl">
+          Transform your career story into a stunning online portfolio with our
+          AI-powered generator. Clean, modern, and built for impact.
         </p>
+
         <motion.button
-          whileHover={{ scale: 1.05, boxShadow: "0 10px 25px rgba(0,0,0,0.2)" }}
+          whileHover={{
+            scale: 1.05,
+            boxShadow: "0 0 25px rgba(34,197,94,0.4)",
+          }}
           whileTap={{ scale: 0.95 }}
-          className="mt-8 px-8 py-4 rounded-full shadow-lg bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold text-lg flex items-center gap-3 hover:from-purple-600 hover:to-blue-600 transition-all duration-300"
-          onClick={() => navigate('/not-logged-in-home')}
+          className="mt-8 px-8 py-4 rounded-full bg-green-500 text-black font-semibold text-lg flex items-center gap-3 transition-all duration-300 hover:bg-green-400"
+          onClick={() => navigate("/not-logged-in-home")}
         >
           GET STARTED <Rocket className="w-5 h-5" />
         </motion.button>
       </motion.div>
 
-      {/* Features Section */}
+      {/* FEATURES */}
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.6 }}
-        className="mt-20 mb-16 w-full max-w-6xl"
+        transition={{ duration: 0.8 }}
+        className="mt-20 mb-16 w-full max-w-6xl z-10"
       >
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-          Powerful Features of Our Portfolio Generator
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+          Powerful Features
         </h2>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[
             {
-              icon: <Upload className="w-8 h-8 text-purple-600" />,
+              icon: <Upload />,
               title: "Resume Upload",
-              desc: "Easily upload your resume in PDF or DOC format. Our AI extracts key information to pre-fill your portfolio details.",
+              desc: "Upload your resume and auto-fill portfolio data instantly.",
             },
             {
-              icon: <FileText className="w-8 h-8 text-blue-600" />,
-              title: "Guided Form Filling",
-              desc: "Step-by-step forms guide you through adding personal info, experience, projects, and skills with smart suggestions.",
+              icon: <FileText />,
+              title: "Guided Forms",
+              desc: "Step-by-step smart input system with AI suggestions.",
             },
             {
-              icon: <Palette className="w-8 h-8 text-indigo-600" />,
-              title: "Beautiful Templates",
-              desc: "Choose from a variety of professionally designed templates across different categories to match your style.",
+              icon: <Palette />,
+              title: "Modern Templates",
+              desc: "Minimal, premium templates designed for impact.",
             },
             {
-              icon: <FileText className="w-8 h-8 text-teal-600" />,
-              title: "Resume Generation",
-              desc: "Instantly generate a professional, ATS-friendly resume from your portfolio data with just one click.",
+              icon: <FileText />,
+              title: "Resume Builder",
+              desc: "Generate ATS-friendly resumes in one click.",
             },
             {
-              icon: <Zap className="w-8 h-8 text-yellow-600" />,
-              title: "One-Click Deployment",
-              desc: "Deploy your portfolio instantly to a live URL with our hosting service. No technical setup required.",
+              icon: <Zap />,
+              title: "Instant Deploy",
+              desc: "Launch your portfolio live instantly.",
             },
             {
-              icon: <Shield className="w-8 h-8 text-green-600" />,
-              title: "Secure Authentication",
-              desc: "Sign up and log in securely to manage your portfolios. Your data is protected with industry-standard security.",
+              icon: <Shield />,
+              title: "Secure Auth",
+              desc: "Your data is safe with strong authentication.",
             },
-            
           ].map((feature, i) => (
             <motion.div
               key={i}
               initial={{ y: 40, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.8 + i * 0.1 }}
-              whileHover={{ scale: 1.05, y: -5 }}
-              className="px-6 py-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 flex flex-col items-center text-center hover:shadow-2xl transition-all duration-300"
+              transition={{ delay: i * 0.1 }}
+              whileHover={{
+                scale: 1.05,
+                y: -8,
+              }}
+              className="p-6 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-lg hover:shadow-green-500/20 transition-all duration-300"
             >
-              <div className="mb-4 p-3 bg-gradient-to-br from-white to-gray-50 rounded-full shadow-md">
+              <div className="mb-4 p-3 rounded-full bg-green-500/10 text-green-400 w-fit">
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-bold mb-3 text-gray-800">{feature.title}</h3>
-              <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
+
+              <h3 className="text-xl font-semibold mb-2">
+                {feature.title}
+              </h3>
+
+              <p className="text-gray-400 text-sm leading-relaxed">
+                {feature.desc}
+              </p>
             </motion.div>
           ))}
         </div>
       </motion.div>
 
-      {/* Call to Action */}
+      {/* CTA */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
+        initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, delay: 1.5 }}
-        className="mb-8 text-center"
+        className="mb-8 text-center z-10"
       >
-        <p className="text-lg text-gray-700 mb-4">Ready to showcase your talents?</p>
+        <p className="text-gray-400 mb-4">
+          Ready to showcase your talent?
+        </p>
+
         <motion.button
-          whileHover={{ scale: 1.05 }}
+          whileHover={{
+            scale: 1.05,
+            boxShadow: "0 0 20px rgba(234,179,8,0.4)",
+          }}
           whileTap={{ scale: 0.95 }}
-          className="px-6 py-3 rounded-lg shadow bg-gradient-to-r from-green-500 to-teal-500 text-white font-medium flex items-center gap-2 hover:from-green-600 hover:to-teal-600 transition-all duration-300"
-          onClick={() => navigate('/login')}
+          className="px-6 py-3 rounded-lg bg-yellow-400 text-black font-medium flex items-center gap-2 hover:bg-yellow-300 transition-all"
+          onClick={() => navigate("/login")}
         >
-          LOGIN TO CONTINUE <Wand2 className="w-4 h-4" />
+          LOGIN <Wand2 className="w-4 h-4" />
         </motion.button>
       </motion.div>
     </div>
